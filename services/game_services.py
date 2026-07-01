@@ -3,8 +3,9 @@ from typing import List
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from db import Game, TeamInfo
-from madden_classes import MaddenScheduleEntry
+from models.Game import Game
+from models.TeamInfo import TeamInfo
+from models.madden_classes import MaddenScheduleEntry
 
 
 def upsert_game(session: Session, entry: MaddenScheduleEntry):

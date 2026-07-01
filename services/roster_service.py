@@ -1,8 +1,8 @@
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from db import Player
-from madden_classes import MaddenPlayerData
+from models import Player
+from models.madden_classes import MaddenPlayerData
 
 
 def upsert_player(session: Session, p: MaddenPlayerData):

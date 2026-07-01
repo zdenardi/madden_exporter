@@ -2,7 +2,7 @@
 from sqlalchemy.orm import Session
 from sqlalchemy import select
 
-from db import (
+from models import (
     DefensiveStat,
     Game,
     KickingStat,
@@ -12,7 +12,7 @@ from db import (
     RushingStat,
     TeamStats,
 )
-from madden_classes import (
+from models.madden_classes import (
     MaddenDefensiveStat,
     MaddenKickingStat,
     MaddenPassingStat,

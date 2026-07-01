@@ -1,5 +1,5 @@
-from db import Game, PassingStat, Player
-from madden_classes import (
+from models import Game, PassingStat, Player
+from models.madden_classes import (
     MaddenDefensiveStat,
     MaddenKickingStat,
     MaddenPassingStat,

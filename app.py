@@ -7,8 +7,9 @@ from flask import Flask, request
 from sqlalchemy import select
 
 
-from db import SessionLocal, TeamInfo, setup_db, engine
-from madden_classes import (
+from db import SessionLocal, setup_db, engine
+from models.TeamInfo import TeamInfo
+from models.madden_classes import (
     MaddenKickingStat,
     MaddenPassingStat,
     MaddenPlayerData,

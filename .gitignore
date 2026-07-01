@@ -2,3 +2,25 @@
 recovered/*
 exports/*
 tunnel_url.txt
+
+**/__pycache__/
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+
+
+# pytest
+.pytest_cache/
+
+
+# IDEs
+.vscode/
+
+# macOS
+.DS_Store
+
+__pycache__/*
+__pycache__/app.cpython-310.pyc

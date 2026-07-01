@@ -1,4 +1,4 @@
-from db import Event, Game
+from models import Event, Game
 from services.game_services import get_favorite
 
 

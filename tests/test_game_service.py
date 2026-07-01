@@ -1,5 +1,5 @@
-from db import Game
-from madden_classes import MaddenScheduleEntry
+from models import Game
+from models.madden_classes import MaddenScheduleEntry
 from services.game_services import (
     get_favorite,
     get_games_by_week,
