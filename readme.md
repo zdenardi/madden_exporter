@@ -1,6 +1,12 @@
 # Madden 26 Exporter 
 This repo uses the Madden 26 companion app and uses the exported data for future projects. 
 
+## What is Madden? Why is this needed?
+
+Madden is a multi-decade long American Football game that allows users to play as managers/coaches/players in the NFL. I am currently in whats called a "Connected Franchise" where me and some friends are building up different teams within the same "league". 
+
+The stats/GUI of Madden leave much to be desired, so I thought it would be a fun project to reverse engineer and create a project that provides better data for our league. 
+
 ## Requirements
 - You must have the madden companion app downloaded, or any other way to send a export request.  
 - Docker installed
@@ -49,3 +55,18 @@ These are separated when I was reverse engineering the responses. I think in the
 
  ### `/<path:path>` - GET | POST
  - This was used to be a catch-all to grab all information to start reverse engineering everything.
+
+## Some old code that will be removed  
+I have some old remnants of code that I have left over from my research and will have to be removed, mostly in the app.py as routes. They are there for now don't judge me too harshly. 
+
+## Whats next
+
+Thanks to @snallapa and his research which you can read at [here](https://nallapareddy.com/snallabot-post/)...he figured out a way to send API requests without the use of the app which is something that could really make this app sing. 
+
+Some 'Bluesky' features I would like to implement
+
+
+- Auto get updates from EA servers without my intervention
+- Ability to automatically tell a league in Slack that the week advanced 
+- Ability to create AI generated articles off the cuff based on `Events` such as a player having a record setting day, or an upset, or just random funny "tweets" based on the league to make the league feel more alive. 
+- A fantasy'esk game using the stats week by week.
