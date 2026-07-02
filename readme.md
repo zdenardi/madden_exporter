@@ -7,6 +7,8 @@ Madden is a multi-decade long American Football game that allows users to play a
 
 The stats/GUI of Madden leave much to be desired, so I thought it would be a fun project to reverse engineer and create a project that provides better data for our league. 
 
+The main issue is that EA has zero documentation on the export process, so I am reverse engineering it. 
+
 ## Requirements
 - You must have the madden companion app downloaded, or any other way to send a export request.  
 - Docker installed
