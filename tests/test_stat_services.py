@@ -32,12 +32,12 @@ def test_upsert_passing_create(session, player: Player, game: Game):
         passAtt=20,
         passComp=18,
         passCompPct=18 / 20,
-        passInt=1,
+        passInts=1,
         passLongest=25,
         passPts=0,
         passerRating=101.1,
         passSacks=1,
-        passTds=2,
+        passTDs=2,
         passYds=300,
         passYdsPerAtt=300 / 18,
         passYdsPerGame=300,
@@ -52,7 +52,7 @@ def test_upsert_passing_create(session, player: Player, game: Game):
 def test_upsert_passing_upsert(
     session, passing_stat: PassingStat, team_1, game, player
 ):
-    assert passing_stat.pass_int == 0
+    assert passing_stat.pass_ints == 0
     madden_passing = MaddenPassingStat(
         fullName="J. Doe",
         rosterId=passing_stat.roster_id,
@@ -65,12 +65,12 @@ def test_upsert_passing_upsert(
         passAtt=20,
         passComp=18,
         passCompPct=18 / 20,
-        passInt=1,
+        passInts=1,
         passLongest=25,
         passPts=0,
         passerRating=101.1,
         passSacks=1,
-        passTds=2,
+        passTDs=2,
         passYds=300,
         passYdsPerAtt=300 / 18,
         passYdsPerGame=300,
@@ -79,7 +79,7 @@ def test_upsert_passing_upsert(
     stat = upsert_pass(session, madden_passing)
     session.flush()
     assert stat.id == passing_stat.id
-    assert stat.pass_int == 1
+    assert stat.pass_ints == 1
 
 
 def test_upsert_rushing_create(session, player, game):

@@ -2,9 +2,7 @@ import pytest
 from requests import Session
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-
-from db import (
-    Base,
+from models import (
     DefensiveStat,
     Game,
     KickingStat,
@@ -15,6 +13,7 @@ from db import (
     RushingStat,
     TeamInfo,
 )
+from models.helper_classes import Base
 
 TEST_URL = "postgresql+psycopg://madden:madden@localhost:5432/madden_test"
 
@@ -130,7 +129,7 @@ def passing_stat(session: Session, game: Game, team_1: TeamInfo, player: Player)
         pass_att=38,
         pass_comp=24,
         pass_comp_pct=63.1579,
-        pass_int=-0,
+        pass_ints=0,
         pass_longest=36,
         pass_pts=0,
         passer_rating=100.3,
