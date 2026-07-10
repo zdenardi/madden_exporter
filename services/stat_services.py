@@ -68,7 +68,7 @@ def upsert_pass(session: Session, stat: MaddenPassingStat):
         existing.pass_att = stat.passAtt
         existing.pass_comp = stat.passComp
         existing.pass_comp_pct = stat.passCompPct
-        existing.pass_int = stat.passInts
+        existing.pass_ints = stat.passInts
         existing.pass_longest = stat.passLongest
         existing.pass_pts = stat.passPts
         existing.passer_rating = stat.passerRating
