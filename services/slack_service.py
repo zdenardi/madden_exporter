@@ -1,8 +1,10 @@
 from slack_sdk import WebClient
 from slack_sdk.errors import SlackApiError
+import os
 
-APP_TOKEN = "***REMOVED***"
-BOT_TOKEN = "***REMOVED***"
+APP_TOKEN = os.getenv("APP_TOKEN")
+BOT_TOKEN = os.getenv("BOT_TOKEN")
+
 client = WebClient(BOT_TOKEN)
 
 

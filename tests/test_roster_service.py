@@ -1,6 +1,6 @@
-from db import Player
+from models import Player
 
 
-def test_upsert_roster_create(session)
+def test_upsert_roster_create(session):
     assert session.query(Player).count() == 0
-    
+    pass

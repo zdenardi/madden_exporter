@@ -1,7 +1,11 @@
+from dataclasses import dataclass
+
 from pydantic import BaseModel, ConfigDict, Field
-from typing import List, Optional
+from typing import List, Literal, Optional
 
 from pydantic.alias_generators import to_camel
+
+from data_classes.data_classes import HumanGameSummary
 
 
 class MaddenTeam(BaseModel):
@@ -444,3 +448,265 @@ class MaddenGameStat(BaseModel):
     total_wins: int
 
     week_index: int
+
+
+class MaddenLeagueInfoSetting(BaseModel):
+    crossplayEnabled: bool
+    legendsEnabled: bool
+    leagueType: str
+    maxMembers: int
+    acceleratedClockEnabled: bool
+    isPublic: bool
+    quarterLength: int
+    skillLevel: str
+    leagueModeType: str
+
+
+class MaddenLeagueInfo(BaseModel):
+    lastAdvancedTimeSecs: int
+    calendarYear: int
+    numMembers: int
+    commishPlatform: str
+    commish: dict
+    creationTime: int
+    currentWeekCompleted: bool
+    userFullName: str
+    userPosition: str
+    userTeamId: int
+    importedLeagueId: int
+    isImportable: bool
+    isNextGameHome: bool
+    isUsingUgc: bool
+    joinsEnabled: bool
+    leagueId: int
+    leagueName: str
+    nextOpponentTeamId: int
+    rosterId: int
+    settings: MaddenLeagueInfoSetting
+    seasonSort: int
+    seasonText: str
+    secsSinceLastAdvancedTime: int
+    teamLogos: str
+    teams: str
+    userPlayerClass: str
+    userTeamLogoId: int
+    userTeamName: str
+
+
+class HubWeekInfo(BaseModel):
+    gamesPlayedCount: int
+    gamesPlayerStatsCount: int
+    gameTotalCount: int
+    stageIndex: int
+    weekIndex: int
+    weekTitle: str
+
+
+class HubSeasonInfo(BaseModel):
+    isAnnualAwardsPeriodActive: bool
+    displayWeek: int
+    calendarYear: int
+    superBowlNumber: int
+    isDraftScoutingActive: bool
+    isDraftActive: bool
+    isFreeAgentPeriodActive: bool
+    isFantasyDraftActive: bool
+    isGoalsPeriodActive: bool
+    nextSeasonWeek: int
+    offSeasonStage: int
+    offSeasonWeekCount: int
+    postSeasonWeekCount: int
+    isProBowlPlayable: bool
+    isPracticeSquadPeriodActive: bool
+    preseasonWeekCount: int
+    isReSignPeriodActive: bool
+    regularSeasonWeekCount: int
+    isDemandReleaseCoachAvailable: bool
+    isInSeasonFreeAgentsAvailable: bool
+    isLeagueStarted: bool
+    maxYears: Literal[30]
+    isDemandReleasePlayerAvailable: bool
+    seasonWeek: int
+    seasonWeekType: int
+    seasonYear: int
+    weekTitle: str
+    seasonTitle: str
+    totalSeasonWeekCount: int
+    isWeeklyAwardsPeriodActive: bool
+
+
+class ExportSizeEstimateInfo(BaseModel):
+    defensiveStatsPerGameEstimate: int
+    kickingStatsPerGameEstimate: int
+    leagueTotalEstimate: int
+    leagueTeamTotalEstimate: int
+    rosterDataPerPlayerEstimate: int
+    passingStatsPerGameEstimate: int
+    puntingStatsPerGameEstimate: int
+    receivingStatsPerGameEstimate: int
+    rushingStatsPerGameEstimate: int
+    scheduleDataPerGameEstimate: int
+    standingsTotalEstimate: int
+    teamStatsPerGameEstimate: int
+
+
+class GameInfo(BaseModel):
+    awayTeamPrimaryColorBlue: int
+    awayTeamPrimaryColorGreen: int
+    awayTeamPrimaryColorRed: int
+    awayCityName: str
+    awayTeamLogoId: int
+    awayLoss: int
+    awayName: str
+    awayTie: int
+    awayWin: int
+    isByeWeek: bool
+    gameTime: str
+    displayedWeek: str
+    forceWin: int
+    homeLoss: int
+    homeName: str
+    homeTie: int
+    homeWin: int
+    matchup: str
+    isGamePlayed: bool
+    result: str
+    week: int
+    weekType: int
+    homeTeamPrimaryColorBlue: int
+    homeTeamPrimaryColorGreen: int
+    homeTeamPrimaryColorRed: int
+    homeCityName: str
+    homeTeamLogoId: int
+    awayUserId: int
+    awayUserName: str
+    homeUserId: int
+    homeUserName: str
+    isAwayHuman: bool
+    isHomeHuman: bool
+    numberTimesPlayed: int
+    isBoxScoreUnavailable: bool
+    awayTeam: int
+    homeTeam: int
+
+
+class LeagueSchedule(BaseModel):
+    canForceWin: bool
+    seasonGameKey: int
+    seasonGameInfo: GameInfo
+
+
+class GameScheduleHubInfo(BaseModel):
+    userCanForceWin: bool
+    leagueSchedule: list[LeagueSchedule]
+    userTeam: int
+
+
+class HubCareerInfo(BaseModel):
+    isLeagueAutoSimming: bool
+    isLeagueAdvancing: bool
+    requestInfoList: list  # I dont know what this isssss
+    seasonInfo: HubSeasonInfo
+
+
+class HubPlayerCountInfo(BaseModel):
+    freeAgentCount: int
+    practiceSquadCount: int
+    rosterCount: int
+    totalCount: int
+
+
+class HubTeamIdInfo(BaseModel):
+    shortName: str
+    displayName: str
+    presentationId: int
+    teamId: int
+
+
+class UserAdminInfo(BaseModel):
+    canEnableUnlimitedAutoPilot: bool
+    isMasterUser: bool
+    isAdmin: bool
+    isDraftActive: bool
+    isLeagueStarted: bool
+    adminLevel: str
+    canAdminsBootAdmins: bool
+    userId: int
+    canAdminsRemoveAdmins: bool
+
+
+class UserInfo(BaseModel):
+    defaultRequestActionTimeout: Literal["On", "Off"]
+    autoPilot: bool
+    characterName: str
+    isCoach: bool
+    isOwner: bool
+    isOnline: bool
+    position: int
+    readyToAdvance: bool
+    teamName: str
+    userName: str
+    isAdmin: bool
+    showNFLPA: bool
+    platformId: int
+    portraitId: int
+    salaryCapPenalty: int
+    teamPrimaryColor: int
+    team: int
+    teamLogoId: int
+    gameInfo: str
+    adminLevel: str
+    userAttribute: int
+    durability: int
+    userId: int
+    intangible: int
+    legacyScore: int
+    overall: int
+    production: int
+    physical: int
+    size: int
+
+
+class HubUserAdminInfo(BaseModel):
+    userAdminInfo: UserAdminInfo
+    userInfoMap: dict[int, UserInfo]
+
+
+class HubResponseValue(BaseModel):
+    availableWeekInfoList: list[HubWeekInfo]
+    careerHubInfo: HubCareerInfo
+    exportSizeEstimateInfo: ExportSizeEstimateInfo
+    gameScheduleHubInfo: GameScheduleHubInfo
+    playerCountInfo: HubPlayerCountInfo
+    message: str
+    secsSinceLastAdvancedTime: int
+    success: bool
+    teamIdInfoList: list[HubTeamIdInfo]
+    userAdminHubInfo: HubUserAdminInfo
+
+    def get_week(self):
+        return self.careerHubInfo.seasonInfo.displayWeek
+
+    def get_year(self):
+        return self.careerHubInfo.seasonInfo.calendarYear
+
+    def get_human_game_summaries(self) -> list[HumanGameSummary]:
+        summaries = []
+        for user_info in self.userAdminHubInfo.userInfoMap.items():
+            _, user = user_info
+            game_summary: HumanGameSummary = {
+                "user_name": user.userName,
+                "summary": user.gameInfo,
+            }
+            summaries.append(game_summary)
+        return summaries
+
+
+class HubResponseInfo(BaseModel):
+    tdfid: int
+    tdfclass: str
+    value: HubResponseValue
+
+
+class MaddenLeagueHubInfo(BaseModel):
+    responseInfo: HubResponseInfo

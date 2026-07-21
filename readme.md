@@ -17,7 +17,7 @@ The main issue is that EA has zero documentation on the export process, so I am 
 - pip install -r requirements.txt
 - run docker-compose up and wait for it to finish starting up
 - in a terminal, navigate to root and `bash run.sh` to get the cloudflare tunnel started. It will spit out a url that you can use to export to 
-- in another terminal run `flask run --host=0.0.0.0 --debug 
+- in another terminal run `flask run --host=0.0.0.0 --debug`
 
 Note: You don't need debug, but sense this is a pretty new project, and you might be fiddling probably helpful.
 

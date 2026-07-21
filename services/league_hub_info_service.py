@@ -1,27 +1,27 @@
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from data_classes.madden_classes import MaddenLeagueInfo
-from models.LeagueInfo import LeagueInfo
+
 from data_classes.data_classes import WeekAdvance
+from data_classes.madden_classes import MaddenLeagueHubInfo
+from models.LeagueHubInfo import LeagueHubInfo
 
 
-class LeagueInfoService:
+class LeagueHubInfoService:
     @staticmethod
     def upsert_league_info(
-        session: Session,
-        info: MaddenLeagueInfo,
-    ) -> LeagueInfo:
-        league = session.scalar(
-            select(LeagueInfo).where(LeagueInfo.league_id == info["leagueId"])
-        )
+        session: Session, hub_info: MaddenLeagueHubInfo, league_id: int
+    ) -> LeagueHubInfo:
+        info = hub_info.responseInfo.value
+        stmt = select(LeagueHubInfo).where(LeagueHubInfo.league_id == league_id)
+        league = session.scalar(stmt)
 
         if league is None:
-            league = LeagueInfo.convert_from_madden(info)
+            league = LeagueHubInfo.convert_from_madden(league_id, hub_info)
             session.add(league)
         else:
-            league.calendar_year = info["calendarYear"]
-            league.week = int(info["seasonText"].split()[-1])
+            league.calendar_year = info.value.get_year()
+            league.week = info.value.get_week()
 
         session.commit()
         session.refresh(league)
@@ -29,18 +29,17 @@ class LeagueInfoService:
 
     @staticmethod
     def did_week_advance(
-        session: Session,
-        info: MaddenLeagueInfo,
+        session: Session, hub_info: MaddenLeagueHubInfo, league_id: int
     ) -> WeekAdvance:
         league = session.scalar(
-            select(LeagueInfo).where(LeagueInfo.league_id == info["leagueId"])
+            select(LeagueHubInfo).where(LeagueHubInfo.league_id == league_id)
         )
 
-        new_week = int(info["seasonText"].split()[-1])
-        new_year = info["calendarYear"]
+        new_week = hub_info.responseInfo.value.get_week()
+        new_year = hub_info.responseInfo.value.get_year()
 
         if league is None:
-            LeagueInfoService.upsert_league_info(session, info)
+            LeagueHubInfoService.upsert_league_info(session, hub_info, league_id)
             return WeekAdvance(
                 advanced=True,
                 old_week=None,

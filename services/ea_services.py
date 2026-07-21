@@ -17,32 +17,35 @@ from sqlalchemy.orm import Session
 from sqlalchemy import select
 
 import urllib3
-from constants import LeagueData, LeagueDataKey
+from constants import (
+    AUTH_SOURCE,
+    CLIENT_ID,
+    CLIENT_SECRET,
+    LEAGUE_ID,
+    MACHINE_KEY,
+    REDIRECT_URL,
+    LeagueData,
+    LeagueDataKey,
+)
+from models import LeagueHubInfo
 from models.EAtoken import EATokenInfo
-from models.LeagueInfo import LeagueInfo
-from models.dataclasses import (
+from data_classes.data_classes import (
     AccessTokenResponse,
     AuthData,
     BlazeReq,
     BlazeSession,
     Entitlement,
-    MaddenLeagueInfo,
     Persona,
     TokenInformation,
     UserLoginInfo,
 )
-from models.madden_classes import MaddenStandingsEntry, MaddenTeam
-from services.league_info_service import LeagueInfoService
-
-AUTH_SOURCE = 317239
-CLIENT_SECRET = (
-    "teJpJ9cSXFqZAuKNW8IuHpy8D4dwWPoVrPoek38iCnrGbrUSfjqnHMBAv8iCVjeSm_20250910175618"
+from data_classes.madden_classes import (
+    HubResponseValue,
+    MaddenLeagueHubInfo,
+    MaddenLeagueInfo,
+    MaddenStandingsEntry,
+    MaddenTeam,
 )
-REDIRECT_URL = "http://127.0.0.1/success"
-CLIENT_ID = "MCA_26_COMP_APP"
-MACHINE_KEY = "444d362e8e067fe2"
-EA_LOGIN_URL = f"https://accounts.ea.com/connect/auth?hide_create=true&release_type=prod&response_type=code&redirect_uri={REDIRECT_URL}&client_id={CLIENT_ID}&machineProfileKey={MACHINE_KEY}&authentication_source={AUTH_SOURCE}"
-LEAGUE_ID = 27435432
 
 oauth_code = None
 oauth_event = threading.Event()
@@ -527,6 +530,31 @@ def get_madden_league_info(token: TokenInformation, blaze_session: BlazeSession)
         ][0]
 
         return league_info
+    else:
+        print(response.json())
+        raise Exception("Error getting leagues")
+
+
+def get_madden_league_hub(token: TokenInformation, blaze_session: BlazeSession):
+    response = send_blaze_req(
+        token,
+        blaze_session,
+        {
+            "commandName": "Mobile_Career_GetLeagueHub",
+            "componentId": 2060,
+            "commandId": 811,
+            "requestPayload": {"leagueId": LEAGUE_ID},
+            "componentName": "careermode",
+        },
+    )
+    if (
+        response.ok
+        and response.json()["responseInfo"]["tdfclass"]
+        == "Blaze::FranchiseMode::MobileCareer::GetLeagueHubResponse"
+    ):
+        json = response.json()
+        league_hub_info = MaddenLeagueHubInfo.model_validate(json)
+        return league_hub_info
     else:
         print(response.json())
         raise Exception("Error getting leagues")
