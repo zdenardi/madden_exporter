@@ -1,3 +1,5 @@
+import os
+
 from sqlalchemy import Engine, create_engine
 from sqlalchemy.orm import (
     sessionmaker,
@@ -5,7 +7,8 @@ from sqlalchemy.orm import (
 
 from models.helper_classes import Base
 
-DATABASE_URL = "postgresql+psycopg://" "madden:madden@localhost:5432/madden"
+DATABASE_URL = os.getenv("DATABASE_URL")
+
 
 engine = create_engine(
     DATABASE_URL,
