@@ -1,0 +1,43 @@
+{
+  "lastAdvancedTimeSecs": 1784297339,
+  "calendarYear": 2038,
+  "numMembers": 4,
+  "commishPlatform": "xbsx",
+  "commish": {
+    "persona": "Brinkofhumor",
+    "userId": 1004475611377
+  },
+  "creationTime": 1778910351000000,
+  "currentWeekCompleted": false,
+  "userFullName": "P. Hill",
+  "userPosition": "POSITION_HC",
+  "userTeamId": 7,
+  "importedLeagueId": 0,
+  "isImportable": false,
+  "isNextGameHome": false,
+  "isUsingUgc": false,
+  "joinsEnabled": true,
+  "leagueId": 27435432,
+  "leagueName": "Brinkofhumor",
+  "nextOpponentTeamId": 28,
+  "rosterId": 268435455,
+  "settings": {
+    "crossplayEnabled": true,
+    "legendsEnabled": true,
+    "leagueType": "LEAGUETYPE_ALL",
+    "maxMembers": 4,
+    "acceleratedClockEnabled": true,
+    "isPublic": false,
+    "quarterLength": 10,
+    "skillLevel": "SKILLLEVEL_ALL_MADDEN",
+    "leagueModeType": "LEAGUEMODETYPE_CLASSIC"
+  },
+  "seasonSort": 13385,
+  "seasonText": "2038 Wk 10",
+  "secsSinceLastAdvancedTime": 24761,
+  "teamLogos": "10,11,31,6",
+  "teams": "11,12,0,7",
+  "userPlayerClass": "",
+  "userTeamLogoId": 6,
+  "userTeamName": "Cardinals"
+}

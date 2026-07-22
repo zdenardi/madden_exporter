@@ -1,5 +1,4 @@
-from models import Game, PassingStat, Player
-from models.madden_classes import (
+from data_classes.madden_classes import (
     MaddenDefensiveStat,
     MaddenKickingStat,
     MaddenPassingStat,
@@ -7,6 +6,8 @@ from models.madden_classes import (
     MaddenReceivingStat,
     MaddenRushingStat,
 )
+from models import Game, PassingStat, Player
+
 from services.stat_services import (
     upsert_def,
     upsert_kick,

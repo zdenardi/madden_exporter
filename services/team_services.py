@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
 
+from data_classes.madden_classes import MaddenTeam
 from models import TeamInfo
-from models.madden_classes import MaddenTeam
 
 
 def upsert_team(session: Session, team: MaddenTeam):

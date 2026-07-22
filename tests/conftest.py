@@ -1,3 +1,7 @@
+from datetime import datetime
+import os
+
+from dotenv import load_dotenv
 import pytest
 from requests import Session
 from sqlalchemy import create_engine
@@ -14,8 +18,12 @@ from models import (
     TeamInfo,
 )
 from models.helper_classes import Base
+from services.ea_services import get_EA_token_info
 
-TEST_URL = "postgresql+psycopg://madden:madden@localhost:5432/madden_test"
+load_dotenv()
+
+TEST_URL = os.getenv("TEST_DATABASE_URL")
+
 
 engine = create_engine(
     TEST_URL,
@@ -281,3 +289,9 @@ def rec_stat(session: Session, game: Game, team_1: TeamInfo, player: Player):
     session.add(stat)
     session.flush()
     return stat
+
+
+@pytest.fixture
+def EAToken(session: Session):
+    token = get_EA_token_info(session)
+    return token

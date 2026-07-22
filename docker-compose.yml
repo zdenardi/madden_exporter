@@ -1,4 +1,16 @@
 services:
+  app:
+    build: .
+    container_name: madden-app
+    restart: unless-stopped
+    depends_on:
+      - postgres
+    ports:
+      - "5000:5000"
+    env_file:
+      - .env
+
+  
   postgres:
     image: postgres:17
     container_name: madden-postgres
@@ -11,6 +23,11 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U madden"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
 volumes:
   postgres_data:

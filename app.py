@@ -4,12 +4,10 @@ import random
 import traceback
 import requests
 from flask import Flask, request
-from sqlalchemy import select
+from dotenv import load_dotenv
 
 
-from db import SessionLocal, setup_db, engine
-from models.TeamInfo import TeamInfo
-from models.madden_classes import (
+from data_classes.madden_classes import (
     MaddenKickingStat,
     MaddenPassingStat,
     MaddenPlayerData,
@@ -20,12 +18,24 @@ from models.madden_classes import (
     MaddenStandingsEntry,
     MaddenTeam,
 )
+from db import SessionLocal, setup_db, engine
+from models.TeamInfo import TeamInfo
+
+
+from services import slack_service
+from services.ea_services import (
+    LEAGUE_ID,
+    get_EA_token_info,
+    get_blaze_session,
+    get_madden_league_hub,
+)
 from services.event_service import create_upset_event
 from services.game_services import (
     get_games_by_week,
     is_upset,
     upsert_game,
 )
+from services.league_hub_info_service import LeagueHubInfoService
 from services.roster_service import upsert_player
 from services.stat_services import (
     upsert_kick,
@@ -36,6 +46,8 @@ from services.stat_services import (
     upsert_stat,
 )
 from services.team_services import upsert_team
+
+load_dotenv()
 
 app = Flask(__name__)
 setup_db(engine)
@@ -370,3 +382,29 @@ def create_reddit_post():
         "event": event.payload,
         "reddit_post": data["response"],
     }
+
+
+@app.route("/sync_league", methods=["GET"])
+def should_send_week():
+    session = SessionLocal()
+    token = get_EA_token_info(session)
+    blaze_session = get_blaze_session(token)
+    league_info = get_madden_league_hub(token, blaze_session)
+    did_adv = LeagueHubInfoService.did_week_advance(session, league_info, LEAGUE_ID)
+    if did_adv.was_created:
+        slack_service.send_message("Tracking League Advancement!")
+    if did_adv.week_changed:
+        slack_service.send_message(
+            f"Week has advanced from Week {did_adv.old_week} to {did_adv.current_week}"
+        )
+    if did_adv.season_changed:
+        slack_service.send_message(
+            f"Season has advanced from Week {did_adv.old_year} to {did_adv.current_year}"
+        )
+    game_summaries = league_info.responseInfo.value.get_human_game_summaries()
+    msg = "User Games: \n"
+    for summary in game_summaries:
+        msg += f"   {summary['user_name']}: {summary['summary']} \n"
+    slack_service.send_message(msg)
+
+    return {"success": True}

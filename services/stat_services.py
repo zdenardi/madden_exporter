@@ -12,7 +12,7 @@ from models import (
     RushingStat,
     TeamStats,
 )
-from models.madden_classes import (
+from data_classes.madden_classes import (
     MaddenDefensiveStat,
     MaddenKickingStat,
     MaddenPassingStat,
