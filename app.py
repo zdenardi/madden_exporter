@@ -384,7 +384,7 @@ def create_reddit_post():
     }
 
 
-@app.route("/send_week", methods=["GET"])
+@app.route("/sync_league", methods=["GET"])
 def should_send_week():
     session = SessionLocal()
     token = get_EA_token_info(session)
