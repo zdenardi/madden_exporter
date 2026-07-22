@@ -1,4 +1,16 @@
 services:
+  app:
+    build: .
+    container_name: madden-app
+    restart: unless-stopped
+    depends_on:
+      - postgres
+    ports:
+      - "5000:5000"
+    env_file:
+      - .env
+
+  
   postgres:
     image: postgres:17
     container_name: madden-postgres

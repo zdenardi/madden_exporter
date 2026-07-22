@@ -27,7 +27,6 @@ from constants import (
     LeagueData,
     LeagueDataKey,
 )
-from models import LeagueHubInfo
 from models.EAtoken import EATokenInfo
 from data_classes.data_classes import (
     AccessTokenResponse,
