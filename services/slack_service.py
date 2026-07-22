@@ -4,13 +4,14 @@ import os
 
 APP_TOKEN = os.getenv("APP_TOKEN")
 BOT_TOKEN = os.getenv("BOT_TOKEN")
+SLACK_CHANNEL = os.getenv("SLACK_CHANNEL")
 
 client = WebClient(BOT_TOKEN)
 
 
 def send_message(message: str):
     try:
-        response = client.chat_postMessage(channel="#test_madden_bot", text=message)
+        response = client.chat_postMessage(channel=f"#{SLACK_CHANNEL}", text=message)
         assert response["message"]["text"] == message
     except SlackApiError as e:
         # You will get a SlackApiError if "ok" is False
