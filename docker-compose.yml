@@ -21,7 +21,7 @@ services:
       POSTGRES_PASSWORD: madden
     ports:
       - "5432:5432"
-    volumes:
+    volumes:  
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U madden"]
