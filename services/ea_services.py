@@ -27,6 +27,7 @@ from constants import (
     LeagueData,
     LeagueDataKey,
 )
+import data_classes
 from models.EAtoken import EATokenInfo
 from data_classes.data_classes import (
     AccessTokenResponse,
@@ -463,7 +464,7 @@ def refresh_token(refresh_token: str) -> TokenInformation:
         "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
         "Accept-Encoding": "gzip",
     }
-    params = {
+    data = {
         "grant_type": "refresh_token",
         "client_id": CLIENT_ID,
         "client_secret": CLIENT_SECRET,
@@ -473,7 +474,7 @@ def refresh_token(refresh_token: str) -> TokenInformation:
         "token_format": "JWS",
     }
 
-    response = requests.post(url=url, headers=headers, params=params)
+    response = requests.post(url=url, headers=headers, data=data)
     return response.json()
 
 
@@ -494,6 +495,7 @@ def get_EA_token_info(session: Session):
         )
         session.add(token)
     else:
+
         if token.expires_at <= datetime.now(timezone.utc) + timedelta(seconds=30):
             t = refresh_token(token.refresh_token)
             token.access_token = t["access_token"]
