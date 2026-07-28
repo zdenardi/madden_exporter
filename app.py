@@ -396,7 +396,7 @@ def create_reddit_post():
 
 
 @app.route("/sync_league", methods=["GET"])
-def should_send_week():
+def sync_league():
     session = SessionLocal()
     token = get_EA_token_info(session)
     blaze_session = get_blaze_session(token)
@@ -435,7 +435,6 @@ def get_code_from_url():
     session = SessionLocal()
 
     url = request.form.get("url")
-    print(url)
 
     parsed_url = urlparse(url)
     query_params = parse_qs(parsed_url.query)
@@ -464,6 +463,6 @@ def get_code_from_url():
         else:
             token = token_info
         session.commit()
-        return {"success": True}
+        return {"success": True, "token": "Valid"}
     else:
         return {"success": False}
