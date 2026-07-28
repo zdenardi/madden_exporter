@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta, timezone
 import json
+import os
 import random
 import traceback
 from urllib.parse import urlparse
@@ -58,6 +59,9 @@ from services.stat_services import (
 from services.team_services import upsert_team
 
 load_dotenv()
+SLACK_CHANNEL = os.getenv("SLACK_CHANNEL")
+APP_ENV = os.getenv("APP_ENV")
+
 
 app = Flask(__name__)
 setup_db(engine)
@@ -268,34 +272,34 @@ def import_resource(
     return {"success": True}
 
 
-@app.route("/<path:path>", methods=["GET", "POST"])
-def catch_all(path):
-    print("PATH:", path)
-    print("METHOD:", request.method)
+# @app.route("/<path:path>", methods=["GET", "POST"])
+# def catch_all(path):
+#     print("PATH:", path)
+#     print("METHOD:", request.method)
 
-    data = None
-    try:
-        data = request.get_json()
-    except Exception:
-        # This handles cases where content-type might be wrong or body is empty
-        pass
+#     data = None
+#     try:
+#         data = request.get_json()
+#     except Exception:
+#         # This handles cases where content-type might be wrong or body is empty
+#         pass
 
-    log_entry = {
-        "path": path,
-        "method": request.method,
-        "json_data": data,  # Will contain the parsed JSON or None if none was present/parsed
-    }
+#     log_entry = {
+#         "path": path,
+#         "method": request.method,
+#         "json_data": data,  # Will contain the parsed JSON or None if none was present/parsed
+#     }
 
-    # Using a more descriptive filename that includes time and perhaps some unique ID
-    filename = f"exports/log_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}_{hash(path + request.method)}.json"
+#     # Using a more descriptive filename that includes time and perhaps some unique ID
+#     filename = f"exports/log_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}_{hash(path + request.method)}.json"
 
-    try:
-        with open(filename, "w") as f:
-            json.dump(log_entry, f, indent=2)
-    except Exception as e:
-        print(f"Error writing log file: {e}")
+#     try:
+#         with open(filename, "w") as f:
+#             json.dump(log_entry, f, indent=2)
+#     except Exception as e:
+#         print(f"Error writing log file: {e}")
 
-    return {"received": path}
+#     return {"received": path}
 
 
 @app.route("/game/<int:season>/<int:week>", methods=["GET"])
@@ -397,26 +401,29 @@ def create_reddit_post():
 
 @app.route("/sync_league", methods=["GET"])
 def sync_league():
+    channel_name = "madden3" if APP_ENV == "prod" else "test_madden_bot"
     session = SessionLocal()
     token = get_EA_token_info(session)
     blaze_session = get_blaze_session(token)
     league_info = get_madden_league_hub(token, blaze_session)
     did_adv = LeagueHubInfoService.did_week_advance(session, league_info, LEAGUE_ID)
     if did_adv.was_created:
-        slack_service.send_message("Tracking League Advancement!")
+        slack_service.send_message("Tracking League Advancement!", channel_name)
     if did_adv.week_changed:
         slack_service.send_message(
-            f"Week has advanced from Week {did_adv.old_week} to {did_adv.current_week}"
+            f"Week has advanced from Week {did_adv.old_week} to {did_adv.current_week}",
+            channel_name,
         )
     if did_adv.season_changed:
         slack_service.send_message(
-            f"Season has advanced from Week {did_adv.old_year} to {did_adv.current_year}"
+            f"Season has advanced from Week {did_adv.old_year} to {did_adv.current_year}",
+            channel_name,
         )
     game_summaries = league_info.responseInfo.value.get_human_game_summaries()
     msg = "User Games: \n"
     for summary in game_summaries:
         msg += f"   {summary['user_name']}: {summary['summary']} \n"
-    slack_service.send_message(msg)
+    slack_service.send_message(msg, channel_name)
 
     return {"success": True}
 

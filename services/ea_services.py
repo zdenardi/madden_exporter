@@ -39,7 +39,6 @@ from data_classes.data_classes import (
     UserLoginInfo,
 )
 from data_classes.madden_classes import (
-    HubResponseValue,
     MaddenLeagueHubInfo,
     MaddenLeagueInfo,
     MaddenStandingsEntry,

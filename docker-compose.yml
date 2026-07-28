@@ -10,6 +10,18 @@ services:
     env_file:
       - .env
 
+  worker:
+    build: .
+    container_name: madden-worker
+    restart: unless-stopped
+    depends_on:
+      - app
+    env_file:
+      - .env
+    volumes:
+      - .:/app
+    command: python madden_worker.py
+
   
   postgres:
     image: postgres:17
@@ -28,6 +40,8 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+
+    
 
 volumes:
   postgres_data:
