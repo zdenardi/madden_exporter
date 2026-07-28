@@ -27,7 +27,6 @@ from constants import (
     LeagueData,
     LeagueDataKey,
 )
-import data_classes
 from models.EAtoken import EATokenInfo
 from data_classes.data_classes import (
     AccessTokenResponse,
@@ -176,7 +175,7 @@ def get_auth_code():
     thread = threading.Thread(target=run_server, daemon=True)
     thread.start()
 
-    webbrowser.open(url)
+    webbrowser.open(url=url)
     oauth_event.wait()
 
     return oauth_code
