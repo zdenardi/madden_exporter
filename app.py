@@ -1,12 +1,16 @@
-import datetime
+from datetime import datetime, timedelta, timezone
 import json
 import random
 import traceback
+from urllib.parse import urlparse
+import webbrowser
 import requests
-from flask import Flask, request
+from flask import Flask, render_template, request
 from dotenv import load_dotenv
+from sqlalchemy import select
 
 
+from constants import REDIRECT_URL
 from data_classes.madden_classes import (
     MaddenKickingStat,
     MaddenPassingStat,
@@ -19,15 +23,21 @@ from data_classes.madden_classes import (
     MaddenTeam,
 )
 from db import SessionLocal, setup_db, engine
+from models.EAtoken import EATokenInfo
 from models.TeamInfo import TeamInfo
 
 
 from services import slack_service
 from services.ea_services import (
     LEAGUE_ID,
+    get_EA_access_token,
+    get_EA_jws_token,
     get_EA_token_info,
     get_blaze_session,
     get_madden_league_hub,
+    get_persona_auth_code,
+    get_personas,
+    parse_qs,
 )
 from services.event_service import create_upset_event
 from services.game_services import (
@@ -55,6 +65,7 @@ setup_db(engine)
 
 @app.route("/")
 def home():
+
     return {"status": "ok"}
 
 
@@ -408,3 +419,51 @@ def should_send_week():
     slack_service.send_message(msg)
 
     return {"success": True}
+
+
+@app.route("/login_EA", methods=["GET"])
+def get_auth_code_from_url():
+    url = f"https://accounts.ea.com/connect/auth?hide_create=true&release_type=prod&response_type=code&redirect_uri={REDIRECT_URL}&client_id=MCA_26_COMP_APP&machineProfileKey=444d362e8e067fe2&authentication_source=317239"
+
+    webbrowser.open(url=url)
+
+    return render_template("get_auth_code.html")
+
+
+@app.route("/submit_url", methods=["POST"])
+def get_code_from_url():
+    session = SessionLocal()
+
+    url = request.form.get("url")
+    print(url)
+
+    parsed_url = urlparse(url)
+    query_params = parse_qs(parsed_url.query)
+    code = query_params.get("code", [""])[0]
+    token = get_EA_access_token(code)
+    personas = get_personas(token)
+    persona = personas[0]
+    p_code = get_persona_auth_code(token["access_token"], persona)
+    ea_jws = get_EA_jws_token(p_code)
+    expires_at = datetime.now(timezone.utc) + timedelta(seconds=ea_jws["expires_in"])
+    token_info = EATokenInfo(
+        access_token=ea_jws["access_token"],
+        refresh_token=ea_jws["refresh_token"],
+        expires_at=expires_at,
+    )
+    blaze_session = get_blaze_session(token_info)
+    league_info = get_madden_league_hub(token_info, blaze_session)
+    if (
+        league_info.responseInfo.tdfclass
+        == "Blaze::FranchiseMode::MobileCareer::GetLeagueHubResponse"
+    ):
+        token = session.scalar(statement=select(EATokenInfo))
+        if token is None:
+            session.add(token_info)
+
+        else:
+            token = token_info
+        session.commit()
+        return {"success": True}
+    else:
+        return {"success": False}

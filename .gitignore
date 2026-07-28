@@ -23,5 +23,6 @@ __pycache__/
 .DS_Store
 
 __pycache__/*
-__pycache__/app.cpython-310.pyc
 .env
+
+*.pyc 
