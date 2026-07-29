@@ -3,8 +3,14 @@
     <div>
       <h1>Copy and Paste URL below</h1>
       <p>
-        This will log you into EA and get you a code to use in the next step
+        Click the link below and copy and paste the url when you are redirected
+        into the input box.
       </p>
+      <a
+        href="https://accounts.ea.com/connect/auth?hide_create=true&release_type=prod&response_type=code&redirect_uri=http://127.0.0.1/success&client_id=MCA_26_COMP_APP&machineProfileKey=444d362e8e067fe2&authentication_source=317239"
+        target="_blank"
+        >Click Here</a
+      >
       <form method="POST" action="/submit_url">
         <input type="text" name="url" placeholder="URL" />
         <button type="submit">submit</button>

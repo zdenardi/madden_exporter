@@ -430,10 +430,6 @@ def sync_league():
 
 @app.route("/login_EA", methods=["GET"])
 def get_auth_code_from_url():
-    url = f"https://accounts.ea.com/connect/auth?hide_create=true&release_type=prod&response_type=code&redirect_uri={REDIRECT_URL}&client_id=MCA_26_COMP_APP&machineProfileKey=444d362e8e067fe2&authentication_source=317239"
-
-    webbrowser.open(url=url)
-
     return render_template("get_auth_code.html")
 
 
