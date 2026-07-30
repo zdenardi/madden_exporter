@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 
 from data_classes.madden_classes import MaddenLeagueInfo
 from models.LeagueInfo import LeagueInfo
-from data_classes.data_classes import WeekAdvance
+from data_classes.data_classes import WeekInformation
 
 
 class LeagueInfoService:
@@ -31,7 +31,7 @@ class LeagueInfoService:
     def did_week_advance(
         session: Session,
         info: MaddenLeagueInfo,
-    ) -> WeekAdvance:
+    ) -> WeekInformation:
         league = session.scalar(
             select(LeagueInfo).where(LeagueInfo.league_id == info["leagueId"])
         )
@@ -41,7 +41,7 @@ class LeagueInfoService:
 
         if league is None:
             LeagueInfoService.upsert_league_info(session, info)
-            return WeekAdvance(
+            return WeekInformation(
                 advanced=True,
                 old_week=None,
                 current_week=new_week,
@@ -59,7 +59,7 @@ class LeagueInfoService:
             league.calendar_year = new_year
             session.commit()
 
-        return WeekAdvance(
+        return WeekInformation(
             advanced=advanced,
             old_week=old_week,
             current_week=new_week,

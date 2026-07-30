@@ -1,9 +1,8 @@
 import json
 from pathlib import Path
 
+from constants import MOCKS_DIR
 from data_classes.madden_classes import HubResponseValue
-
-MOCKS_DIR = Path(__file__).parent.parent.parent / "mocks"
 
 
 def test_league_hub_info():
@@ -18,14 +17,3 @@ def test_league_hub_info():
     assert summaries == expected_summaries
     assert week == 9
     assert year == 2026
-
-
-def test_summaries():
-    summaries = [
-        {"user_name": "snallapa", "summary": "@ Texans"},
-        {"user_name": "fizz", "summary": "@ Buzz"},
-    ]
-    msg = "Games: "
-    for summary in summaries:
-        msg += f"{summary['user_name']}: {summary['summary']} \n"
-    print(msg)

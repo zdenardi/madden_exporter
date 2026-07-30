@@ -138,12 +138,14 @@ class HumanGameSummary:
 
 
 @dataclass
-class WeekAdvance:
+class WeekInformation:
     advanced: bool
     old_week: int | None
     current_week: int
     old_year: int | None
     current_year: int
+    did_summaries_update: bool
+    summaries: str
 
     @property
     def season_changed(self) -> bool:
