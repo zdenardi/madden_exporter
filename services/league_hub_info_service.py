@@ -60,6 +60,8 @@ class LeagueHubInfoService:
 
         old_week = league.week
         old_year = league.calendar_year
+        current_summaries = league.summaries
+        are_new_summaries = summary_text != current_summaries
 
         advanced = old_week != new_week or old_year != new_year
         if advanced:
@@ -67,9 +69,7 @@ class LeagueHubInfoService:
             league.calendar_year = new_year
             league.summaries = summary_text
 
-        are_new_summaries = summary_text != league.summaries
-
-        if are_new_summaries:
+        elif are_new_summaries:
             league.summaries = summary_text
 
         return WeekInformation(
