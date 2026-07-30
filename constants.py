@@ -1,5 +1,7 @@
+from pathlib import Path
 from typing import Literal
 
+MOCKS_DIR = Path(__file__).parent / "mocks"
 LEAGUE_ID = 27435432
 AUTH_SOURCE = 317239
 CLIENT_SECRET = (

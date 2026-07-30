@@ -1,11 +1,11 @@
-from datetime import datetime
 import os
 
-from dotenv import load_dotenv
 import pytest
+from dotenv import load_dotenv
 from requests import Session
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+
 from models import (
     DefensiveStat,
     Game,
@@ -18,6 +18,7 @@ from models import (
     TeamInfo,
 )
 from models.helper_classes import Base
+from models.LeagueHubInfo import LeagueHubInfo
 from services.ea_services import get_EA_token_info
 
 load_dotenv()
@@ -295,3 +296,16 @@ def rec_stat(session: Session, game: Game, team_1: TeamInfo, player: Player):
 def EAToken(session: Session):
     token = get_EA_token_info(session)
     return token
+
+
+@pytest.fixture
+def league_info(session: Session) -> LeagueHubInfo:
+    league_hub_info = LeagueHubInfo(
+        league_id=1,
+        week=1,
+        calendar_year=2026,
+        summaries="",
+    )
+    session.add(league_hub_info)
+    session.flush()
+    return league_hub_info

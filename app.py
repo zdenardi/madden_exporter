@@ -1,15 +1,14 @@
-from datetime import datetime, timedelta, timezone
 import json
 import os
 import random
 import traceback
+from datetime import datetime, timedelta, timezone
 from urllib.parse import urlparse
-import webbrowser
-import requests
-from flask import Flask, render_template, request
-from dotenv import load_dotenv
-from sqlalchemy import select
 
+import requests
+from dotenv import load_dotenv
+from flask import Flask, render_template, request
+from sqlalchemy import select
 
 from constants import REDIRECT_URL
 from data_classes.madden_classes import (
@@ -23,18 +22,16 @@ from data_classes.madden_classes import (
     MaddenStandingsEntry,
     MaddenTeam,
 )
-from db import SessionLocal, setup_db, engine
+from db import SessionLocal, engine, setup_db
 from models.EAtoken import EATokenInfo
 from models.TeamInfo import TeamInfo
-
-
 from services import slack_service
 from services.ea_services import (
     LEAGUE_ID,
+    get_blaze_session,
     get_EA_access_token,
     get_EA_jws_token,
     get_EA_token_info,
-    get_blaze_session,
     get_madden_league_hub,
     get_persona_auth_code,
     get_personas,
@@ -406,24 +403,29 @@ def sync_league():
     token = get_EA_token_info(session)
     blaze_session = get_blaze_session(token)
     league_info = get_madden_league_hub(token, blaze_session)
-    did_adv = LeagueHubInfoService.did_week_advance(session, league_info, LEAGUE_ID)
-    if did_adv.was_created:
+    week_info = LeagueHubInfoService.get_week_info(session, league_info, LEAGUE_ID)
+    if week_info.was_created:
         slack_service.send_message("Tracking League Advancement!", channel_name)
-    if did_adv.week_changed:
+        slack_service.send_message(week_info.summaries, channel_name)
+
+    if week_info.week_changed:
         slack_service.send_message(
-            f"Week has advanced from Week {did_adv.old_week} to {did_adv.current_week}",
+            f"Week has advanced from Week {week_info.old_week} to {week_info.current_week}",
             channel_name,
         )
-    if did_adv.season_changed:
+    if week_info.season_changed:
         slack_service.send_message(
-            f"Season has advanced from Week {did_adv.old_year} to {did_adv.current_year}",
+            f"Season has advanced from Week {week_info.old_year} to {week_info.current_year}",
             channel_name,
         )
-    game_summaries = league_info.responseInfo.value.get_human_game_summaries()
-    msg = "User Games: \n"
-    for summary in game_summaries:
-        msg += f"   {summary['user_name']}: {summary['summary']} \n"
-    slack_service.send_message(msg, channel_name)
+        slack_service.send_message(week_info.summaries, channel_name)
+
+    if week_info.did_summaries_update:
+        slack_service.send_message(week_info.summaries, channel_name)
+    try:
+        session.commit()
+    finally:
+        session.close()
 
     return {"success": True}
 
@@ -464,8 +466,13 @@ def get_code_from_url():
             session.add(token_info)
 
         else:
-            token = token_info
-        session.commit()
+            token.access_token = token_info.access_token
+            token.refresh_token = token_info.refresh_token
+            token.expires_at = token_info.expires_at
+        try:
+            session.commit()
+        finally:
+            session.close()
         return {"success": True, "token": "Valid"}
     else:
         return {"success": False}
