@@ -27,7 +27,7 @@ def test_weekly_information_update_summary(
     assert week_info.old_week == 1
     assert week_info.current_week == 9
     assert week_info.did_summaries_update
-    assert week_info.new_summaries == expected_summary
+    assert week_info.summaries == expected_summary
 
 
 def test_weekly_information_no_summary_update(
