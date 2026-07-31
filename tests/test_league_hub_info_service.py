@@ -15,7 +15,9 @@ from services.league_hub_info_service import LeagueHubInfoService
 def test_weekly_information_update_summary(
     session: Session, league_info: LeagueHubInfo
 ):
-    expected_summary = "User Games: \n   snallapa: @ Texans \n"
+    expected_summary = (
+        "User Games: \n   snallapa: Houston (4-3-0) @ New England (6-1-0) \n"
+    )
     with open(MOCKS_DIR / "league_hub_info.json", "r") as f:
         value = json.load(f)
     response_info = HubResponseInfo(
@@ -33,7 +35,6 @@ def test_weekly_information_update_summary(
 def test_weekly_information_no_summary_update(
     session: Session, league_info: LeagueHubInfo
 ):
-    expected_summary = "User Games: \n   snallapa: @ Texans \n"
     ID = 2
     with open(MOCKS_DIR / "league_hub_info.json", "r") as f:
         value = json.load(f)
@@ -45,7 +46,7 @@ def test_weekly_information_no_summary_update(
         league_id=ID,
         week=9,
         calendar_year=2026,
-        summaries="User Games: \n   snallapa: @ Texans \n",
+        summaries="User Games: \n   snallapa: Houston (4-3-0) @ New England (6-1-0) \n",
     )
     session.add(example_info)
     session.flush()
