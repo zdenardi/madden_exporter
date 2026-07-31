@@ -1,8 +1,7 @@
 from dataclasses import dataclass
-
-from pydantic import BaseModel, ConfigDict, Field
 from typing import List, Literal, Optional
 
+from pydantic import BaseModel, ConfigDict, Field
 from pydantic.alias_generators import to_camel
 
 from data_classes.data_classes import HumanGameSummary
@@ -252,17 +251,17 @@ class MaddenPlayerData(BaseModel):
     throwPowerRating: int = 0
     throwOnRunRating: int = 0
     throwUnderPressureRating: int = 0
-    teamId: Optional[int] = None
+    teamId: int | None = None
     truckRating: int = 0
-    teamSchemeOvr: Optional[int] = None
-    weight: Optional[int] = None
+    teamSchemeOvr: int | None = None
+    weight: int | None = None
     experiencePoints: int = 0
     yACCatchTrait: int = 0
     yearsPro: Optional[int] = None
     zoneCoverRating: int = 0
     rosterId: int
 
-    rosterGoalList: List[Optional[MaddenRosterGoal]] = Field(default_factory=list)  # type: ignore
+    rosterGoalList: list[Optional[MaddenRosterGoal]] = Field(default_factory=list)  # type: ignore
 
 
 class MaddenScheduleEntry(BaseModel):
@@ -698,6 +697,22 @@ class HubResponseValue(BaseModel):
                 "user_name": user.userName,
                 "summary": user.gameInfo,
             }
+            id = user.userId
+            user_game = next(
+                (
+                    game
+                    for game in self.gameScheduleHubInfo.leagueSchedule
+                    if game.seasonGameInfo.homeUserId == id
+                    or game.seasonGameInfo.awayUserId == id
+                ),
+                None,
+            )
+            if user_game is not None and not user_game.seasonGameInfo.isGamePlayed:
+                info = user_game.seasonGameInfo
+                home_text = f"{info.homeCityName} ({info.homeWin}-{info.homeLoss}-{info.homeTie})"
+                away_text = f"{info.awayCityName} ({info.awayWin}-{info.awayLoss}-{info.awayTie})"
+                game_summary["summary"] = f"{home_text} @ {away_text}"
+
             summaries.append(game_summary)
         return summaries
 
