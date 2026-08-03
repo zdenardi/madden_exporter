@@ -1,22 +1,21 @@
 import base64
 import hashlib
+import json
 import secrets
 import ssl
-import time
-from typing import List
-import webbrowser
 import threading
-import requests
-import json
+import time
+import webbrowser
+from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timedelta, timezone
 from http.server import BaseHTTPRequestHandler, HTTPServer
-from urllib.parse import urlparse, parse_qs
-from concurrent.futures import ThreadPoolExecutor
+from urllib.parse import parse_qs, urlparse
 
-from sqlalchemy.orm import Session
-from sqlalchemy import select
-
+import requests
 import urllib3
+from sqlalchemy import select
+from sqlalchemy.orm import Session
+
 from constants import (
     AUTH_SOURCE,
     CLIENT_ID,
@@ -27,7 +26,6 @@ from constants import (
     LeagueData,
     LeagueDataKey,
 )
-from models.EAtoken import EATokenInfo
 from data_classes.data_classes import (
     AccessTokenResponse,
     AuthData,
@@ -44,6 +42,7 @@ from data_classes.madden_classes import (
     MaddenStandingsEntry,
     MaddenTeam,
 )
+from models.EAtoken import EATokenInfo
 
 oauth_code = None
 oauth_event = threading.Event()
@@ -227,7 +226,7 @@ def get_personas(token: AccessTokenResponse):
         response.raise_for_status()
         return response.json()
 
-    def process_responses(urls: List[str]) -> List[Persona]:
+    def process_responses(urls: list[str]) -> list[Persona]:
         with ThreadPoolExecutor() as executor:
             responses = list(executor.map(fetch, urls))
         return responses[0]["personas"]["persona"]
@@ -556,13 +555,13 @@ def get_madden_league_hub(token: TokenInformation, blaze_session: BlazeSession):
         return league_hub_info
     else:
         print(response.json())
-        raise Exception("Error getting leagues")
+        raise Exception["Error getting leagues"]
 
 
 def get_teams(token: TokenInformation, session: BlazeSession, league_id: int):
     response = get_export_data(token, session, "TEAMS", {"leagueId": LEAGUE_ID})
     if response.ok and response.json()["leagueTeamInfoList"]:
-        teams: List[MaddenTeam] = response.json()["leagueTeamInfoList"]
+        teams: list[MaddenTeam] = response.json()["leagueTeamInfoList"]
         return teams
     else:
         raise Exception["Error getting teams"]
@@ -571,7 +570,7 @@ def get_teams(token: TokenInformation, session: BlazeSession, league_id: int):
 def get_standings(token: TokenInformation, session: BlazeSession, league_id: int):
     response = get_export_data(token, session, "STANDINGS", {"leagueId": LEAGUE_ID})
     if response.ok and response.json()["teamStandingInfoList"]:
-        standings: List[MaddenStandingsEntry] = response.json()["teamStandingInfoList"]
+        standings: list[MaddenStandingsEntry] = response.json()["teamStandingInfoList"]
         return standings
     else:
         raise Exception["Error getting standings"]

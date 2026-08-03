@@ -3,18 +3,17 @@ from datetime import datetime, timedelta, timezone
 from requests import Session
 
 from models.EAtoken import EATokenInfo
-
 from services.ea_services import (
-    get_EA_access_token,
-    get_EA_jws_token,
     get_auth_code,
     get_blaze_session,
+    get_EA_access_token,
+    get_EA_jws_token,
+    get_EA_token_info,
     get_madden_league_hub,
+    get_madden_league_info,
     get_persona_auth_code,
     get_personas,
-    get_madden_league_info,
     get_standings,
-    get_EA_token_info,
     get_teams,
     refresh_token,
 )

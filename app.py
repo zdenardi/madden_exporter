@@ -413,6 +413,7 @@ def sync_league():
             f"Week has advanced from Week {week_info.old_week} to {week_info.current_week}",
             channel_name,
         )
+
     if week_info.season_changed:
         slack_service.send_message(
             f"Season has advanced from Week {week_info.old_year} to {week_info.current_year}",
@@ -422,6 +423,7 @@ def sync_league():
 
     if week_info.did_summaries_update:
         slack_service.send_message(week_info.summaries, channel_name)
+
     try:
         session.commit()
     finally:
