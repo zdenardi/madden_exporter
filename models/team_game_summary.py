@@ -7,7 +7,7 @@ from models.helper_classes import Base
 
 if TYPE_CHECKING:
     from models.Game import Game
-    from models.TeamInfo import TeamInfo
+    from models.team_info import TeamInfo
 
 
 class TeamGameSummary(Base):

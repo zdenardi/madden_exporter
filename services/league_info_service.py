@@ -1,9 +1,9 @@
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from data_classes.madden_classes import MaddenLeagueInfo
-from models.LeagueInfo import LeagueInfo
 from data_classes.data_classes import WeekInformation
+from data_classes.madden_classes import MaddenLeagueInfo
+from models.league_info import LeagueInfo
 
 
 class LeagueInfoService:

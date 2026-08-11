@@ -5,10 +5,10 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from models.helper_classes import Base
 
 if TYPE_CHECKING:
-    from models.Game import Game
-    from models.TeamStats import TeamStats
-    from models.Player import Player
-    from models.TeamGameSummary import TeamGameSummary
+    from models.game import Game
+    from models.player import Player
+    from models.team_game_summary import TeamGameSummary
+    from models.team_stats import TeamStats
 
 
 class TeamInfo(Base):

@@ -3,11 +3,10 @@ from typing import TYPE_CHECKING
 from sqlalchemy import ForeignKey, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-
 from models.helper_classes import Base
 
 if TYPE_CHECKING:
-    from models.TeamInfo import TeamInfo
+    from models.team_info import TeamInfo
 
 
 class TeamStats(Base):

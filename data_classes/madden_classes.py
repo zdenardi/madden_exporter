@@ -1,10 +1,11 @@
-from dataclasses import dataclass
-from typing import List, Literal, Optional
+from typing import Literal, Optional
 
 from pydantic import BaseModel, ConfigDict, Field
 from pydantic.alias_generators import to_camel
 
 from data_classes.data_classes import HumanGameSummary
+from models import TeamGameSummary
+from models.game import Game
 
 
 class MaddenTeam(BaseModel):
@@ -22,6 +23,183 @@ class MaddenTeam(BaseModel):
     secondaryColor: int
     teamId: int
     userName: str
+
+
+class MaddenTeamStat(BaseModel):
+    defForcedFum: int
+    defFumRec: int
+    defIntsRec: int
+    defPtsPerGame: float
+    defPassYds: int
+    defRushYds: int
+    defRedZoneFGs: int
+    defRedZones: int
+    defRedZonePct: float
+    defRedZoneTDs: int
+    defSacks: int
+    defTotalYds: int
+    off4thDownAtt: int
+    off4thDownConv: int
+    off4thDownConvPct: float
+    offFumLost: int
+    offIntsLost: int
+    off1stDowns: int
+    offPtsPerGame: float
+    offPassTDs: int
+    offPassYds: int
+    offRushTDs: int
+    offRushYds: int
+    offRedZoneFGs: int
+    offRedZones: int
+    offRedZonePct: float
+    offRedZoneTDs: int
+    offSacks: int
+    off3rdDownAtt: int
+    off3rdDownConv: int
+    off3rdDownConvPct: float
+    off2PtAtt: int
+    off2PtConv: int
+    off2PtConvPct: float
+    offTotalYds: int
+    offTotalYdsGained: int
+    penalties: int
+    penaltyYds: int
+    scheduleId: float
+    seed: int
+    seasonIndex: int
+    statId: int
+    stageIndex: int
+    totalLosses: int
+    teamId: int
+    tODiff: int
+    tOGiveaways: int
+    tOTakeaways: int
+    totalTies: int
+    totalWins: int
+    weekIndex: int
+
+    def to_db_model(self, game: Game) -> TeamGameSummary:
+        return TeamGameSummary(
+            team_id=self.teamId,
+            stat_id=self.statId,
+            game_id=game.id,
+            schedule_id=self.scheduleId,
+            week_index=self.weekIndex,
+            def_forced_fum=self.defForcedFum,
+            def_fum_rec=self.defFumRec,
+            def_ints_rec=self.defIntsRec,
+            def_pts_per_game=self.defPtsPerGame,
+            def_pass_yds=self.defPassYds,
+            def_rush_yds=self.defRushYds,
+            def_red_zone_fgs=self.defRedZoneFGs,
+            def_red_zones=self.defRedZones,
+            def_red_zone_pct=self.defRedZonePct,
+            def_red_zone_tds=self.defRedZoneTDs,
+            def_sacks=self.defSacks,
+            def_total_yds=self.defTotalYds,
+            off_4th_down_att=self.off4thDownAtt,
+            off_4th_down_conv=self.off4thDownConv,
+            off_4th_down_conv_pct=self.off4thDownConvPct,
+            off_fum_lost=self.offFumLost,
+            off_ints_lost=self.offIntsLost,
+            off_1st_downs=self.off1stDowns,
+            off_pts_per_game=self.offPtsPerGame,
+            off_pass_tds=self.offPassTDs,
+            off_pass_yds=self.offPassYds,
+            off_rush_tds=self.offRushTDs,
+            off_rush_yds=self.offRushYds,
+            off_red_zone_fgs=self.offRedZoneFGs,
+            off_red_zones=self.offRedZones,
+            off_red_zone_pct=self.offRedZonePct,
+            off_red_zone_tds=self.offRedZoneTDs,
+            off_sacks=self.offSacks,
+            off_3rd_down_att=self.off3rdDownAtt,
+            off_3rd_down_conv=self.off3rdDownConv,
+            off_3rd_down_conv_pct=self.off3rdDownConvPct,
+            off_2pt_att=self.off2PtAtt,
+            off_2pt_conv=self.off2PtConv,
+            off_2pt_conv_pct=self.off2PtConvPct,
+            off_total_yds=self.offTotalYds,
+            off_total_yds_gained=self.offTotalYdsGained,
+            penalties=self.penalties,
+            penalty_yds=self.penaltyYds,
+            seed=self.seed,
+            season_index=self.seasonIndex,
+            stage_index=self.stageIndex,
+            total_losses=self.totalLosses,
+            total_ties=self.totalTies,
+            total_wins=self.totalWins,
+            to_diff=self.tODiff,
+            to_giveaways=self.tOGiveaways,
+            to_takeaways=self.tOTakeaways,
+        )
+
+    def update_from_madden(
+        self,
+        existing: TeamGameSummary,
+    ) -> TeamGameSummary:
+        existing.schedule_id = self.scheduleId
+        existing.week_index = self.weekIndex
+
+        existing.def_forced_fum = self.defForcedFum
+        existing.def_fum_rec = self.defFumRec
+        existing.def_ints_rec = self.defIntsRec
+        existing.def_pts_per_game = self.defPtsPerGame
+        existing.def_pass_yds = self.defPassYds
+        existing.def_rush_yds = self.defRushYds
+        existing.def_red_zone_fgs = self.defRedZoneFgs
+        existing.def_red_zones = self.defRedZones
+        existing.def_red_zone_pct = self.defRedZonePct
+        existing.def_red_zone_tds = self.defRedZoneTDs
+        existing.def_sacks = self.defSacks
+        existing.def_total_yds = self.defTotalYds
+
+        existing.off_4th_down_att = self.off4thDownAtt
+        existing.off_4th_down_conv = self.off4thDownConv
+        existing.off_4th_down_conv_pct = self.off4thDownConvPct
+        existing.off_fum_lost = self.offFumLost
+        existing.off_ints_lost = self.offIntsLost
+        existing.off_1st_downs = self.off1stDowns
+        existing.off_pts_per_game = self.offPtsPerGame
+        existing.off_pass_tds = self.offPassTDs
+        existing.off_pass_yds = self.offPassYds
+        existing.off_rush_tds = self.offRushTDs
+        existing.off_rush_yds = self.offRushYds
+
+        existing.off_red_zone_fgs = self.offRedZoneFgs
+        existing.off_red_zones = self.offRedZones
+        existing.off_red_zone_pct = self.offRedZonePct
+        existing.off_red_zone_tds = self.offRedZoneTDs
+
+        existing.off_sacks = self.offSacks
+
+        existing.off_3rd_down_att = self.off3rdDownAtt
+        existing.off_3rd_down_conv = self.off3rdDownConv
+        existing.off_3rd_down_conv_pct = self.off3rdDownConvPct
+
+        existing.off_2pt_att = self.off2PtAtt
+        existing.off_2pt_conv = self.off2PtConv
+        existing.off_2pt_conv_pct = self.off2PtConvPct
+
+        existing.off_total_yds = self.offTotalYds
+        existing.off_total_yds_gained = self.offTotalYdsGained
+
+        existing.penalties = self.penalties
+        existing.penalty_yds = self.penaltyYds
+
+        existing.seed = self.seed
+        existing.season_index = self.seasonIndex
+        existing.stage_index = self.stageIndex
+
+        existing.total_losses = self.totalLosses
+        existing.total_ties = self.totalTies
+        existing.total_wins = self.totalWins
+
+        existing.to_diff = self.tODiff
+        existing.to_giveaways = self.tOGiveaways
+        existing.to_takeaways = self.tOTakeaways
+
+        return existing
 
 
 class MaddenStandingsEntry(BaseModel):
@@ -244,9 +422,9 @@ class MaddenPlayerData(BaseModel):
     toughRating: int = 0
     tightSpiralTrait: int = 0
     throwAccRating: int = 0
-    throwAccDeepRating: Optional[int] = None
-    throwAccMidRating: Optional[int] = None
-    throwAccShortRating: Optional[int] = None
+    throwAccDeepRating: int | None = None
+    throwAccMidRating: int | None = None
+    throwAccShortRating: int | None = None
     throwAwayTrait: int = 0
     throwPowerRating: int = 0
     throwOnRunRating: int = 0
@@ -257,11 +435,11 @@ class MaddenPlayerData(BaseModel):
     weight: int | None = None
     experiencePoints: int = 0
     yACCatchTrait: int = 0
-    yearsPro: Optional[int] = None
+    yearsPro: int | None = None
     zoneCoverRating: int = 0
     rosterId: int
 
-    rosterGoalList: list[Optional[MaddenRosterGoal]] = Field(default_factory=list)  # type: ignore
+    rosterGoalList: list[MaddenRosterGoal | None] = Field(default_factory=list)  # type: ignore
 
 
 class MaddenScheduleEntry(BaseModel):
@@ -688,6 +866,11 @@ class HubResponseValue(BaseModel):
 
     def get_year(self):
         return self.careerHubInfo.seasonInfo.calendarYear
+
+    def get_internal_week_and_stage(self):
+        week_index = self.careerHubInfo.seasonInfo.seasonWeek
+        stage_index = self.careerHubInfo.seasonInfo.seasonWeekType
+        return (week_index, stage_index)
 
     def get_human_game_summaries(self) -> list[HumanGameSummary]:
         summaries = []

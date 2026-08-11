@@ -1,13 +1,13 @@
 from typing import TYPE_CHECKING
 
-from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy import ForeignKey
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from models.helper_classes import Base
 
 if TYPE_CHECKING:
-    from models.TeamInfo import TeamInfo
+    from models.team_info import TeamInfo
 
 
 class Player(Base):

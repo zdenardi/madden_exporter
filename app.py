@@ -10,7 +10,6 @@ from dotenv import load_dotenv
 from flask import Flask, render_template, request
 from sqlalchemy import select
 
-from constants import REDIRECT_URL
 from data_classes.madden_classes import (
     MaddenKickingStat,
     MaddenPassingStat,
@@ -23,8 +22,9 @@ from data_classes.madden_classes import (
     MaddenTeam,
 )
 from db import SessionLocal, engine, setup_db
-from models.EAtoken import EATokenInfo
-from models.TeamInfo import TeamInfo
+from models.ea_token import EATokenInfo
+from models.stat_update import StatUpdate
+from models.team_info import TeamInfo
 from services import slack_service
 from services.ea_services import (
     LEAGUE_ID,
@@ -35,6 +35,10 @@ from services.ea_services import (
     get_madden_league_hub,
     get_persona_auth_code,
     get_personas,
+    get_standings,
+    get_team_stats,
+    get_teams,
+    get_weekly_schedule,
     parse_qs,
 )
 from services.event_service import create_upset_event
@@ -43,7 +47,9 @@ from services.game_services import (
     is_upset,
     upsert_game,
 )
-from services.league_hub_info_service import LeagueHubInfoService
+from services.league_hub_info_service import (
+    update_league_and_get_week_info,
+)
 from services.roster_service import upsert_player
 from services.stat_services import (
     upsert_kick,
@@ -51,7 +57,9 @@ from services.stat_services import (
     upsert_punt,
     upsert_rec,
     upsert_rush,
-    upsert_stat,
+    upsert_schedule_stat,
+    upsert_stat_update,
+    upsert_team_stat,
 )
 from services.team_services import upsert_team
 
@@ -89,7 +97,7 @@ def import_weekly_roster(
     try:
         for player in players:
             player = MaddenPlayerData.model_validate(player)
-            created, p = upsert_player(session, player)
+            created, _ = upsert_player(session, player)
             if created:
                 created_players += 1
             else:
@@ -258,7 +266,7 @@ def import_resource(
         try:
             for team_stat in data["teamStandingInfoList"]:
                 entry = MaddenStandingsEntry.model_validate(team_stat)
-                upsert_stat(session, entry)
+                upsert_schedule_stat(session, entry)
             session.commit()
         except Exception:
             session.rollback()
@@ -398,17 +406,71 @@ def create_reddit_post():
 
 @app.route("/sync_league", methods=["GET"])
 def sync_league():
+    BATCH_SIZE = 5
     channel_name = "madden3" if APP_ENV == "prod" else "test_madden_bot"
     session = SessionLocal()
     token = get_EA_token_info(session)
     blaze_session = get_blaze_session(token)
     league_info = get_madden_league_hub(token, blaze_session)
-    week_info = LeagueHubInfoService.get_week_info(session, league_info, LEAGUE_ID)
+    teams = get_teams(
+        token,
+        blaze_session,
+        league_id=LEAGUE_ID,
+    )
+    for i in range(0, len(teams), BATCH_SIZE):
+        batch = teams[i : i + BATCH_SIZE]
+        for t in batch:
+            upsert_team(session, t)
+            # roster = get_team_roster(token, blaze_session, LEAGUE_ID, t.teamId)
+            # for player in roster:
+            #     upsert_player(session, player)
+            session.commit()
+
+    week_info = update_league_and_get_week_info(session, league_info, LEAGUE_ID)
+
+    standings = get_standings(token, blaze_session, LEAGUE_ID)
+
+    if week_info.stage_index == 1 and week_info.week_index > 0:
+        # get last weeks stats
+        schedule = get_weekly_schedule(
+            token,
+            blaze_session,
+            LEAGUE_ID,
+            week_info.stage_index,
+            week_info.week_index - 1,
+        )
+
+        for g in schedule:
+            upsert_game(session, g)
+
+        stat_update = StatUpdate(
+            league_id=LEAGUE_ID,
+            week_index=week_info.week_index - 1,
+            stage_index=week_info.stage_index,
+            calendar_year=week_info.current_year,
+            league_info_id=LEAGUE_ID,
+            did_game_stat_sync=True,
+        )
+        session.flush()
+
+        stats = get_team_stats(
+            token,
+            blaze_session,
+            LEAGUE_ID,
+            week_info.stage_index,
+            week_info.week_index - 1,
+        )
+        for stat in stats:
+            stat = upsert_team_stat(session, stat)
+            session.add(stat)
+
     if week_info.was_created:
+
         slack_service.send_message("Tracking League Advancement!", channel_name)
         slack_service.send_message(week_info.summaries, channel_name)
 
     if week_info.week_changed:
+
         slack_service.send_message(
             f"Week has advanced from Week {week_info.old_week} to {week_info.current_week}",
             channel_name,
@@ -422,6 +484,8 @@ def sync_league():
 
     if week_info.did_summaries_update:
         slack_service.send_message(week_info.summaries, channel_name)
+
+    upsert_stat_update(session, stat_update)
     try:
         session.commit()
     finally:

@@ -2,7 +2,7 @@ from typing import TYPE_CHECKING
 
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from models.helper_classes import StatMixin, Base
+from models.helper_classes import Base, StatMixin
 
 if TYPE_CHECKING:
     from models.Game import Game
