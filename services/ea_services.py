@@ -1,22 +1,21 @@
 import base64
 import hashlib
+import json
 import secrets
 import ssl
-import time
-from typing import List
-import webbrowser
 import threading
-import requests
-import json
+import time
+import webbrowser
+from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timedelta, timezone
 from http.server import BaseHTTPRequestHandler, HTTPServer
-from urllib.parse import urlparse, parse_qs
-from concurrent.futures import ThreadPoolExecutor
+from urllib.parse import parse_qs, urlparse
 
-from sqlalchemy.orm import Session
-from sqlalchemy import select
-
+import requests
 import urllib3
+from sqlalchemy import select
+from sqlalchemy.orm import Session
+
 from constants import (
     AUTH_SOURCE,
     CLIENT_ID,
@@ -27,7 +26,6 @@ from constants import (
     LeagueData,
     LeagueDataKey,
 )
-from models.EAtoken import EATokenInfo
 from data_classes.data_classes import (
     AccessTokenResponse,
     AuthData,
@@ -39,11 +37,21 @@ from data_classes.data_classes import (
     UserLoginInfo,
 )
 from data_classes.madden_classes import (
+    MaddenDefensiveStat,
+    MaddenKickingStat,
     MaddenLeagueHubInfo,
     MaddenLeagueInfo,
+    MaddenPassingStat,
+    MaddenPlayerData,
+    MaddenPuntingStat,
+    MaddenReceivingStat,
+    MaddenRushingStat,
+    MaddenScheduleEntry,
     MaddenStandingsEntry,
     MaddenTeam,
+    MaddenTeamStat,
 )
+from models.ea_token import EATokenInfo
 
 oauth_code = None
 oauth_event = threading.Event()
@@ -227,7 +235,7 @@ def get_personas(token: AccessTokenResponse):
         response.raise_for_status()
         return response.json()
 
-    def process_responses(urls: List[str]) -> List[Persona]:
+    def process_responses(urls: list[str]) -> list[Persona]:
         with ThreadPoolExecutor() as executor:
             responses = list(executor.map(fetch, urls))
         return responses[0]["personas"]["persona"]
@@ -350,6 +358,28 @@ def get_blaze_session(token: EATokenInfo) -> BlazeSession:
     return BlazeSession(blaze_id, session_key, request_id)
 
 
+def refresh_blaze_session(token: EATokenInfo, session: BlazeSession) -> BlazeSession:
+    try:
+        # See if Blaze Session is valid by sending a generic request
+        send_blaze_req(
+            token,
+            session,
+            {
+                "commandName": "Mobile_GetMyLeagues",
+                "componentId": 2060,
+                "commandId": 801,
+                "requestPayload": {},
+                "componentName": "careermode",
+            },
+        )
+        # if no errors, then return session
+        return session
+
+    except Exception:
+        new_session = get_blaze_session(token)
+        return new_session
+
+
 def extract_code(location):
     parsed = urlparse(location)
     return parse_qs(parsed.query)["code"][0]
@@ -433,7 +463,7 @@ def send_blaze_req(token: TokenInformation, session: BlazeSession, req: BlazeReq
 
 def get_export_data(
     token: TokenInformation,
-    session: BlazeSession,
+    blaze_session: BlazeSession,
     export_type: LeagueDataKey,
     body: {str, any},
     retries=5,
@@ -448,7 +478,7 @@ def get_export_data(
         "Content-Type": "application/json",
         "User-Agent": "Dalvik/2.1.0 (Linux; U; Android 13; sdk_gphone_x86_64 Build/TE1A.220922.031)",
     }
-    url = f"https://wal2.tools.gos.bio-iad.ea.com/wal/mca/{LeagueData[export_type]}/{session.session_key}"
+    url = f"https://wal2.tools.gos.bio-iad.ea.com/wal/mca/{LeagueData[export_type]}/{blaze_session.session_key}"
     response = requests.post(url=url, headers=headers, json=body, verify=False)
     return response
 
@@ -559,19 +589,269 @@ def get_madden_league_hub(token: TokenInformation, blaze_session: BlazeSession):
         raise Exception("Error getting leagues")
 
 
-def get_teams(token: TokenInformation, session: BlazeSession, league_id: int):
-    response = get_export_data(token, session, "TEAMS", {"leagueId": LEAGUE_ID})
+def get_teams(token: TokenInformation, blaze_session: BlazeSession, league_id: int):
+    response = get_export_data(token, blaze_session, "TEAMS", {"leagueId": LEAGUE_ID})
     if response.ok and response.json()["leagueTeamInfoList"]:
-        teams: List[MaddenTeam] = response.json()["leagueTeamInfoList"]
-        return teams
+        data = response.json()
+        try:
+            return [
+                MaddenTeam.model_validate(team) for team in data["leagueTeamInfoList"]
+            ]
+        except KeyError:
+            raise Exception("TEAMS response missing leagueTeamInfoList")
+
     else:
         raise Exception["Error getting teams"]
 
 
-def get_standings(token: TokenInformation, session: BlazeSession, league_id: int):
-    response = get_export_data(token, session, "STANDINGS", {"leagueId": LEAGUE_ID})
+def get_standings(token: TokenInformation, blaze_session: BlazeSession, league_id: int):
+    response = get_export_data(
+        token, blaze_session, "STANDINGS", {"leagueId": LEAGUE_ID}
+    )
     if response.ok and response.json()["teamStandingInfoList"]:
-        standings: List[MaddenStandingsEntry] = response.json()["teamStandingInfoList"]
+        standings: list[MaddenStandingsEntry] = response.json()["teamStandingInfoList"]
         return standings
     else:
         raise Exception["Error getting standings"]
+
+
+def get_weekly_schedule(
+    token: TokenInformation,
+    blaze_session: BlazeSession,
+    league_id: int,
+    stage_index: int,
+    weekly_index: int,
+):
+    response = get_export_data(
+        token,
+        blaze_session,
+        "WEEKLY_SCHEDULE",
+        {"leagueId": LEAGUE_ID, "stageIndex": stage_index, "weeklyIndex": weekly_index},
+    )
+    if response.ok and response.json()["gameScheduleInfoList"]:
+        data = response.json()
+        try:
+            return [
+                MaddenScheduleEntry.model_validate(game)
+                for game in data["gameScheduleInfoList"]
+            ]
+        except KeyError:
+            raise Exception("Game missing from gameScheduleInfoList")
+        weekly_schedule: list[MaddenScheduleEntry] = response.json()[
+            "gameScheduleInfoList"
+        ]
+        return weekly_schedule
+    else:
+        raise Exception["Error getting weekly schedule"]
+
+
+def get_rushing_stats(
+    token: TokenInformation,
+    session: BlazeSession,
+    league_id: int,
+    stage_index: int,
+    week_index: int,
+):
+    response = get_export_data(
+        token,
+        session,
+        "RUSHING_STATS",
+        {"leagueId": LEAGUE_ID, "stageIndex": stage_index, "week_index": week_index},
+    )
+    if response.ok and response.json()["playerRushingStatInfoList"]:
+        stats: list[MaddenRushingStat] = response.json()["playerRushingStatInfoList"]
+        return stats
+    else:
+        raise Exception[
+            f"Error getting Rushing Stats for Stage:{stage_index}, Week:{week_index}"
+        ]
+
+
+def get_passing_stats(
+    token: TokenInformation,
+    session: BlazeSession,
+    league_id: int,
+    stage_index: int,
+    week_index: int,
+) -> list[MaddenPassingStat]:
+    response = get_export_data(
+        token,
+        session,
+        "PASSING_STATS",
+        {"leagueId": LEAGUE_ID, "stageIndex": stage_index, "week_index": week_index},
+    )
+    if response.ok and response.json()["playerPassingStatInfoList"]:
+        stats: list[MaddenPassingStat] = response.json()["playerPassingStatInfoList"]
+        return stats
+    else:
+        raise Exception[
+            f"Error getting Passing Stats for Stage:{stage_index}, Week:{week_index}"
+        ]
+
+
+def get_punting_stats(
+    token: TokenInformation,
+    session: BlazeSession,
+    league_id: int,
+    stage_index: int,
+    week_index: int,
+) -> list[MaddenPuntingStat]:
+    response = get_export_data(
+        token,
+        session,
+        "PUNTING_STATS",
+        {"leagueId": LEAGUE_ID, "stageIndex": stage_index, "week_index": week_index},
+    )
+    if response.ok and response.json()["playerPuntingStatInfoList"]:
+        stats: list[MaddenPuntingStat] = response.json()["playerPuntingStatInfoList"]
+        return stats
+    else:
+        raise Exception[
+            f"Error getting Passing Stats for Stage:{stage_index}, Week:{week_index}"
+        ]
+
+
+def get_receiving_stats(
+    token: TokenInformation,
+    session: BlazeSession,
+    league_id: int,
+    stage_index: int,
+    week_index: int,
+) -> list[MaddenReceivingStat]:
+    response = get_export_data(
+        token,
+        session,
+        "RECEIVING_STATS",
+        {"leagueId": LEAGUE_ID, "stageIndex": stage_index, "week_index": week_index},
+    )
+    if response.ok and response.json()["playerReceivingStatInfoList"]:
+        stats: list[MaddenReceivingStat] = response.json()[
+            "playerReceivingStatInfoList"
+        ]
+        return stats
+    else:
+        raise Exception[
+            f"Error getting Passing Stats for Stage:{stage_index}, Week:{week_index}"
+        ]
+
+
+def get_defensive_stats(
+    token: TokenInformation,
+    session: BlazeSession,
+    league_id: int,
+    stage_index: int,
+    week_index: int,
+) -> list[MaddenDefensiveStat]:
+    response = get_export_data(
+        token,
+        session,
+        "DEFENSIVE_STATS",
+        {"leagueId": LEAGUE_ID, "stageIndex": stage_index, "week_index": week_index},
+    )
+    if response.ok and response.json()["playerDefensiveStatInfoList"]:
+        stats: list[MaddenDefensiveStat] = response.json()[
+            "playerDefensiveStatInfoList"
+        ]
+        return stats
+    else:
+        raise Exception[
+            f"Error getting Passing Stats for Stage:{stage_index}, Week:{week_index}"
+        ]
+
+
+def get_kicking_stats(
+    token: TokenInformation,
+    session: BlazeSession,
+    league_id: int,
+    stage_index: int,
+    week_index: int,
+) -> list[MaddenKickingStat]:
+    response = get_export_data(
+        token,
+        session,
+        "KICKING_STATS",
+        {"leagueId": LEAGUE_ID, "stageIndex": stage_index, "week_index": week_index},
+    )
+    if response.ok and response.json()["playerKickingStatInfoList"]:
+        stats: list[MaddenKickingStat] = response.json()["playerKickingStatInfoList"]
+        return stats
+    else:
+        raise Exception[
+            f"Error getting Passing Stats for Stage:{stage_index}, Week:{week_index}"
+        ]
+
+
+def get_team_roster(
+    token: TokenInformation,
+    blaze_session: BlazeSession,
+    league_id: int,
+    team_id: int,
+) -> list[MaddenPlayerData]:
+    response = get_export_data(
+        token,
+        blaze_session,
+        "TEAM_ROSTER",
+        {
+            "leagueId": LEAGUE_ID,
+            "teamId": team_id,
+            "returnFreeAgents": False,
+        },
+    )
+    if response.ok and response.json()["rosterInfoList"]:
+        data = response.json()
+        try:
+            return [
+                MaddenPlayerData.model_validate(player)
+                for player in data["rosterInfoList"]
+            ]
+        except KeyError:
+            raise Exception("PLAYER response missing rosterInfoList")
+    else:
+        raise Exception[f"Error getting Team roster for {team_id}"]
+
+
+def get_team_stats(
+    token: TokenInformation,
+    blaze_session: BlazeSession,
+    league_id: int,
+    stage: int,  # preseason 0, season 1
+    week_index: int,
+) -> list[MaddenTeamStat]:
+    response = get_export_data(
+        token,
+        blaze_session,
+        "TEAM_STATS",
+        {"leagueId": LEAGUE_ID, "stageIndex": stage, "weekIndex": week_index},
+    )
+    if response.ok and response.json()["teamStatInfoList"]:
+        data = response.json()
+        try:
+            return [
+                MaddenTeamStat.model_validate(stat) for stat in data["teamStatInfoList"]
+            ]
+        except KeyError:
+            raise Exception("STAT missing from teamStatInfoList!")
+    else:
+        raise Exception[
+            f"Error getting Rushing Stats for Stage:{stage}, Week:{week_index}"
+        ]
+
+
+def get_free_agents(token: TokenInformation, session: BlazeSession, league_id: int):
+    response = get_export_data(
+        token,
+        session,
+        "TEAM_ROSTER",
+        {"leagueId": LEAGUE_ID, "returnFreeAgents": True, "teamId": 0},
+    )
+    if response.ok:
+        free_agents: list[MaddenPlayerData] = response.json()["rosterInfoList"]
+        return free_agents
+    else:
+        raise Exception["Error getting Free Agents"]
+
+
+def ea_client(session: Session):
+    # TODO: Create Fallbacks for userInfo bug
+    token = get_EA_token_info(session)
+    blaze_session = get_blaze_session(token)

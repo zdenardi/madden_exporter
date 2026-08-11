@@ -8,12 +8,12 @@ from data_classes.madden_classes import (
     HubResponseValue,
     MaddenLeagueHubInfo,
 )
-from models import LeagueHubInfo
+from models import league_hub_info
 from services.league_hub_info_service import LeagueHubInfoService
 
 
 def test_weekly_information_update_summary(
-    session: Session, league_info: LeagueHubInfo
+    session: Session, league_info: league_hub_info
 ):
     expected_summary = (
         "User Games: \n   snallapa: Houston (4-3-0) @ New England (6-1-0) \n"
@@ -33,7 +33,7 @@ def test_weekly_information_update_summary(
 
 
 def test_weekly_information_no_summary_update(
-    session: Session, league_info: LeagueHubInfo
+    session: Session, league_info: league_hub_info
 ):
     ID = 2
     with open(MOCKS_DIR / "league_hub_info.json", "r") as f:
@@ -42,7 +42,7 @@ def test_weekly_information_no_summary_update(
         tdfid=1, tdfclass="Blaze::Mock", value=HubResponseValue.model_validate(value)
     )
     madden_league_info = MaddenLeagueHubInfo(responseInfo=response_info)
-    example_info = LeagueHubInfo.LeagueHubInfo(
+    example_info = league_hub_info.LeagueHubInfo(
         league_id=ID,
         week=9,
         calendar_year=2026,

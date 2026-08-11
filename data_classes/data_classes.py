@@ -146,6 +146,8 @@ class WeekInformation:
     current_year: int
     did_summaries_update: bool
     summaries: str
+    week_index: int
+    stage_index: int
 
     @property
     def season_changed(self) -> bool:

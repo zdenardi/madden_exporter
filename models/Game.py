@@ -3,18 +3,17 @@ from typing import TYPE_CHECKING
 from sqlalchemy import ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-
 from models.helper_classes import Base
 
 if TYPE_CHECKING:
-    from models.TeamGameSummary import TeamGameSummary
-    from models.TeamInfo import TeamInfo
-    from models.DefensiveStat import DefensiveStat
-    from models.KickingStat import KickingStat
-    from models.PassingStat import PassingStat
-    from models.PuntingStat import PuntingStat
-    from models.ReceivingStat import ReceivingStat
-    from models.RushingStat import RushingStat
+    from models.defensive_stat import DefensiveStat
+    from models.kicking_stat import KickingStat
+    from models.passing_stat import PassingStat
+    from models.punting_stat import PuntingStat
+    from models.receiving_stat import ReceivingStat
+    from models.rushing_stat import RushingStat
+    from models.team_game_summary import TeamGameSummary
+    from models.team_info import TeamInfo
 
 
 class Game(Base):

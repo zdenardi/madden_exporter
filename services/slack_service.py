@@ -1,6 +1,7 @@
+import os
+
 from slack_sdk import WebClient
 from slack_sdk.errors import SlackApiError
-import os
 
 APP_TOKEN = os.getenv("APP_TOKEN")
 BOT_TOKEN = os.getenv("BOT_TOKEN")

@@ -1,7 +1,7 @@
 import json
 from pathlib import Path
 
-from models.LeagueInfo import LeagueInfo
+from models.league_info import LeagueInfo
 
 MOCKS_DIR = Path(__file__).parent.parent.parent / "mocks"
 

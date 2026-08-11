@@ -18,7 +18,7 @@ from models import (
     TeamInfo,
 )
 from models.helper_classes import Base
-from models.LeagueHubInfo import LeagueHubInfo
+from models.league_hub_info import LeagueHubInfo
 from services.ea_services import get_EA_token_info
 
 load_dotenv()

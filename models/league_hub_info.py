@@ -1,9 +1,13 @@
 from datetime import datetime, timezone
+from typing import TYPE_CHECKING
 
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from data_classes.madden_classes import MaddenLeagueHubInfo
 from models.helper_classes import Base
+
+if TYPE_CHECKING:
+    from models.stat_update import StatUpdate
 
 
 class LeagueHubInfo(Base):
@@ -12,6 +16,10 @@ class LeagueHubInfo(Base):
     week: Mapped[int]
     calendar_year: Mapped[int]
     summaries: Mapped[str] = mapped_column(default="")
+    stat_updates: Mapped[list["StatUpdate"]] = relationship(
+        back_populates="league_hub_info",
+        cascade="all, delete-orphan",
+    )
 
     last_synced: Mapped[datetime] = mapped_column(
         default=lambda: datetime.now(timezone.utc),

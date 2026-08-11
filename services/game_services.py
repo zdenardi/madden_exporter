@@ -1,11 +1,9 @@
-from typing import List
-
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from data_classes.madden_classes import MaddenScheduleEntry
-from models.Game import Game
-from models.TeamInfo import TeamInfo
+from models.game import Game
+from models.team_info import TeamInfo
 
 
 def upsert_game(session: Session, entry: MaddenScheduleEntry):
@@ -42,7 +40,7 @@ def upsert_game(session: Session, entry: MaddenScheduleEntry):
     return game
 
 
-def get_games_by_week(session: Session, week: int, season: int) -> List[Game]:
+def get_games_by_week(session: Session, week: int, season: int) -> list[Game]:
     stmt = select(Game).where(Game.week_index == week, Game.season_index == season)
 
     games = session.execute(stmt).scalars().all()

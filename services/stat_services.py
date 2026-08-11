@@ -1,7 +1,17 @@
 # Gets from Standings Resource
-from sqlalchemy.orm import Session
 from sqlalchemy import select
+from sqlalchemy.orm import Session
 
+from data_classes.madden_classes import (
+    MaddenDefensiveStat,
+    MaddenKickingStat,
+    MaddenPassingStat,
+    MaddenPuntingStat,
+    MaddenReceivingStat,
+    MaddenRushingStat,
+    MaddenStandingsEntry,
+    MaddenTeamStat,
+)
 from models import (
     DefensiveStat,
     Game,
@@ -12,18 +22,11 @@ from models import (
     RushingStat,
     TeamStats,
 )
-from data_classes.madden_classes import (
-    MaddenDefensiveStat,
-    MaddenKickingStat,
-    MaddenPassingStat,
-    MaddenPuntingStat,
-    MaddenReceivingStat,
-    MaddenRushingStat,
-    MaddenStandingsEntry,
-)
+from models.stat_update import StatUpdate
+from models.team_game_summary import TeamGameSummary
 
 
-def upsert_stat(session: Session, entry: MaddenStandingsEntry):
+def upsert_schedule_stat(session: Session, entry: MaddenStandingsEntry):
     stmt = select(TeamStats).where(
         TeamStats.team_id == entry.teamId, TeamStats.season == entry.seasonIndex
     )
@@ -368,3 +371,45 @@ def upsert_kick(session, stat: MaddenKickingStat):
         )
         session.add(kicking_stat)
         return kicking_stat
+
+
+def upsert_team_stat(session: Session, stat: MaddenTeamStat):
+    stmt = select(TeamGameSummary).where(TeamGameSummary.stat_id == stat.statId)
+    existing = session.execute(stmt).scalar_one_or_none()
+
+    if existing:
+        existing = stat.update_from_madden(existing)
+        return existing
+    else:
+        game = session.scalar(select(Game).where(Game.schedule_id == stat.scheduleId))
+        if game is None:
+            raise ValueError(
+                f"Game {stat.scheduleId} not found, could not add kicking stat"
+            )
+        stat = stat.to_db_model(game)
+        return stat
+
+
+def upsert_stat_update(session: Session, update: StatUpdate):
+    stmt = select(StatUpdate).where(
+        StatUpdate.league_info_id == update.league_info_id,
+        StatUpdate.week_index == update.week_index,
+        StatUpdate.stage_index == update.stage_index,
+        StatUpdate.calendar_year == update.calendar_year,
+    )
+    existing = session.execute(stmt).scalar_one_or_none()
+    if existing is None:
+        session.add(update)
+        session.flush()
+        return update
+
+    existing.did_game_stat_sync = update.did_game_stat_sync
+    existing.did_players_sync = update.did_players_sync
+    existing.did_passing_stat_sync = update.did_passing_stat_sync
+    existing.did_rushing_stat_sync = update.did_rushing_stat_sync
+    existing.did_receiving_stat_sync = update.did_receiving_stat_sync
+    existing.did_defense_stat_sync = update.did_defense_stat_sync
+    existing.did_punt_stat_sync = update.did_punt_stat_sync
+    existing.did_kick_stat_sync = update.did_kick_stat_sync
+
+    return existing
