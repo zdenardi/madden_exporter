@@ -10,6 +10,7 @@ from dotenv import load_dotenv
 from flask import Flask, render_template, request
 from sqlalchemy import select
 
+from constants import LEAGUE_ID
 from data_classes.madden_classes import (
     MaddenKickingStat,
     MaddenPassingStat,
@@ -26,30 +27,31 @@ from models.ea_token import EATokenInfo
 from models.stat_update import StatUpdate
 from models.team_info import TeamInfo
 from services import slack_service
-from services.ea_services import (
-    LEAGUE_ID,
+from services.ea_auth_service import (
     get_blaze_session,
     get_EA_access_token,
     get_EA_jws_token,
     get_EA_token_info,
-    get_madden_league_hub,
     get_persona_auth_code,
     get_personas,
-    get_standings,
-    get_team_roster,
-    get_team_stats,
-    get_teams,
-    get_weekly_schedule,
     parse_qs,
 )
 from services.event_service import create_upset_event
-from services.game_services import (
+from services.game_service import (
     get_games_by_week,
     is_upset,
     upsert_game,
 )
 from services.league_hub_info_service import (
     update_league_and_get_week_info,
+)
+from services.madden_data_service import (
+    get_madden_league_hub,
+    get_standings,
+    get_team_roster,
+    get_team_stats,
+    get_teams,
+    get_weekly_schedule,
 )
 from services.roster_service import upsert_player
 from services.stat_services import (
