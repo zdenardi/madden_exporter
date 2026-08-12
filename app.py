@@ -46,7 +46,13 @@ from services.league_hub_info_service import (
     update_league_and_get_week_info,
 )
 from services.madden_data_service import (
+    get_defensive_stats,
+    get_kicking_stats,
     get_madden_league_hub,
+    get_passing_stats,
+    get_punting_stats,
+    get_receiving_stats,
+    get_rushing_stats,
     get_standings,
     get_team_roster,
     get_team_stats,
@@ -56,6 +62,7 @@ from services.madden_data_service import (
 from services.roster_service import upsert_player
 from services.stat_services import (
     get_stat_update,
+    upsert_def,
     upsert_kick,
     upsert_pass,
     upsert_punt,
@@ -486,7 +493,80 @@ def sync_league():
             stat_update.did_teams_sync = True
 
         if not stat_update.did_standings_sync:
+            # TODO
             standings = get_standings(token, blaze_session, LEAGUE_ID)
+
+        if not stat_update.did_passing_stat_sync:
+            passing_stats = get_passing_stats(
+                token,
+                blaze_session,
+                LEAGUE_ID,
+                week_info.stage_index,
+                week_info.week_index - 1,
+            )
+            for stat in passing_stats:
+                upsert_pass(session, stat)
+            stat_update.did_passing_stat_sync = True
+
+        if not stat_update.did_rushing_stat_sync:
+            rushing_stats = get_rushing_stats(
+                token,
+                blaze_session,
+                LEAGUE_ID,
+                week_info.stage_index,
+                week_info.week_index - 1,
+            )
+            for stat in rushing_stats:
+                upsert_rush(session, stat)
+            stat_update.did_rushing_stat_sync = True
+
+        if not stat_update.did_receiving_stat_sync:
+            rec_stats = get_receiving_stats(
+                token,
+                blaze_session,
+                LEAGUE_ID,
+                week_info.stage_index,
+                week_info.week_index - 1,
+            )
+            for stat in rec_stats:
+                upsert_rec(session, stat)
+            stat_update.did_receiving_stat_sync = True
+
+        if not stat_update.did_defense_stat_sync:
+            def_stats = get_defensive_stats(
+                token,
+                blaze_session,
+                LEAGUE_ID,
+                week_info.stage_index,
+                week_info.week_index - 1,
+            )
+            for stat in def_stats:
+                upsert_def(session, stat)
+                stat_update.did_defense_stat_sync = True
+
+        if not stat_update.did_punt_stat_sync:
+            punt_stats = get_punting_stats(
+                token,
+                blaze_session,
+                LEAGUE_ID,
+                week_info.stage_index,
+                week_info.week_index - 1,
+            )
+            for stat in punt_stats:
+                upsert_punt(session, stat)
+                stat_update.did_punt_stat_sync = True
+
+        if not stat_update.did_kick_stat_sync:
+            kicking_stats = get_kicking_stats(
+                token,
+                blaze_session,
+                LEAGUE_ID,
+                week_info.stage_index,
+                week_info.week_index - 1,
+            )
+            for stat in kicking_stats:
+                upsert_kick(session, stat)
+                stat_update.did_kick_stat_sync = True
 
     if week_info.was_created:
 

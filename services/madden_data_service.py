@@ -91,8 +91,15 @@ def get_standings(token: TokenInformation, blaze_session: BlazeSession, league_i
         token, blaze_session, "STANDINGS", {"leagueId": LEAGUE_ID}
     )
     if response.ok and response.json()["teamStandingInfoList"]:
-        standings: list[MaddenStandingsEntry] = response.json()["teamStandingInfoList"]
-        return standings
+        data = response.json()
+        try:
+            return [
+                MaddenStandingsEntry.model_validate(stat)
+                for stat in data["teamStandingInfoList"]
+            ]
+        except KeyError:
+            raise Exception("KeyError in Standings!")
+
     else:
         raise Exception["Error getting standings"]
 
@@ -141,8 +148,15 @@ def get_rushing_stats(
         {"leagueId": LEAGUE_ID, "stageIndex": stage_index, "week_index": week_index},
     )
     if response.ok and response.json()["playerRushingStatInfoList"]:
-        stats: list[MaddenRushingStat] = response.json()["playerRushingStatInfoList"]
-        return stats
+        try:
+            data = response.json()
+            return [
+                MaddenRushingStat.model_validate(stat)
+                for stat in data["playerRushingStatInfoList"]
+            ]
+        except KeyError:
+            raise Exception("Key Error in Rushing Stat!")
+
     else:
         raise Exception[
             f"Error getting Rushing Stats for Stage:{stage_index}, Week:{week_index}"
@@ -163,6 +177,15 @@ def get_passing_stats(
         {"leagueId": LEAGUE_ID, "stageIndex": stage_index, "week_index": week_index},
     )
     if response.ok and response.json()["playerPassingStatInfoList"]:
+        data = response.json()
+        try:
+            return [
+                MaddenPassingStat.model_validate(stat)
+                for stat in data["playerPassingStatInfoList"]
+            ]
+        except KeyError:
+            raise Exception("Key Error in Passing Stats!")
+
         stats: list[MaddenPassingStat] = response.json()["playerPassingStatInfoList"]
         return stats
     else:
@@ -185,8 +208,15 @@ def get_punting_stats(
         {"leagueId": LEAGUE_ID, "stageIndex": stage_index, "week_index": week_index},
     )
     if response.ok and response.json()["playerPuntingStatInfoList"]:
-        stats: list[MaddenPuntingStat] = response.json()["playerPuntingStatInfoList"]
-        return stats
+        data = response.json()
+        try:
+            return [
+                MaddenPuntingStat.model_validate(stat)
+                for stat in data["playerPuntingStatInfoList"]
+            ]
+        except KeyError:
+            raise Exception("Key Error in Punting Stats!")
+
     else:
         raise Exception[
             f"Error getting Passing Stats for Stage:{stage_index}, Week:{week_index}"
@@ -207,10 +237,14 @@ def get_receiving_stats(
         {"leagueId": LEAGUE_ID, "stageIndex": stage_index, "week_index": week_index},
     )
     if response.ok and response.json()["playerReceivingStatInfoList"]:
-        stats: list[MaddenReceivingStat] = response.json()[
-            "playerReceivingStatInfoList"
-        ]
-        return stats
+        data = response.json()
+        try:
+            return [
+                MaddenReceivingStat.model_validate(stat)
+                for stat in data["playerReceivingStatInfoList"]
+            ]
+        except KeyError:
+            raise Exception("Key Error with Rec Stat!")
     else:
         raise Exception[
             f"Error getting Passing Stats for Stage:{stage_index}, Week:{week_index}"
@@ -231,10 +265,15 @@ def get_defensive_stats(
         {"leagueId": LEAGUE_ID, "stageIndex": stage_index, "week_index": week_index},
     )
     if response.ok and response.json()["playerDefensiveStatInfoList"]:
-        stats: list[MaddenDefensiveStat] = response.json()[
-            "playerDefensiveStatInfoList"
-        ]
-        return stats
+        data = response.json()
+        try:
+            return [
+                MaddenDefensiveStat.model_validate(stat)
+                for stat in data["playerDefensiveStatInfoList"]
+            ]
+        except KeyError:
+            raise Exception("Key error with Defense Stat!")
+
     else:
         raise Exception[
             f"Error getting Passing Stats for Stage:{stage_index}, Week:{week_index}"
@@ -255,8 +294,15 @@ def get_kicking_stats(
         {"leagueId": LEAGUE_ID, "stageIndex": stage_index, "week_index": week_index},
     )
     if response.ok and response.json()["playerKickingStatInfoList"]:
-        stats: list[MaddenKickingStat] = response.json()["playerKickingStatInfoList"]
-        return stats
+        data = response.json()
+        try:
+            return [
+                MaddenKickingStat.model_validate(stat)
+                for stat in data["playerKickingStatInfoList"]
+            ]
+        except KeyError:
+            raise Exception("Error in Kicking Stat")
+
     else:
         raise Exception[
             f"Error getting Passing Stats for Stage:{stage_index}, Week:{week_index}"
@@ -327,7 +373,13 @@ def get_free_agents(token: TokenInformation, session: BlazeSession, league_id: i
         {"leagueId": LEAGUE_ID, "returnFreeAgents": True, "teamId": 0},
     )
     if response.ok:
-        free_agents: list[MaddenPlayerData] = response.json()["rosterInfoList"]
-        return free_agents
+        data = response.json()
+        try:
+            return [
+                MaddenPlayerData.model_validate(player)
+                for player in data["rosterInfoList"]
+            ]
+        except KeyError:
+            raise Exception("PLAYER response missing rosterInfoList")
     else:
         raise Exception["Error getting Free Agents"]
