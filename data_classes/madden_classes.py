@@ -147,7 +147,7 @@ class MaddenTeamStat(BaseModel):
         existing.def_pts_per_game = self.defPtsPerGame
         existing.def_pass_yds = self.defPassYds
         existing.def_rush_yds = self.defRushYds
-        existing.def_red_zone_fgs = self.defRedZoneFgs
+        existing.def_red_zone_fgs = self.defRedZoneFGs
         existing.def_red_zones = self.defRedZones
         existing.def_red_zone_pct = self.defRedZonePct
         existing.def_red_zone_tds = self.defRedZoneTDs
@@ -166,7 +166,7 @@ class MaddenTeamStat(BaseModel):
         existing.off_rush_tds = self.offRushTDs
         existing.off_rush_yds = self.offRushYds
 
-        existing.off_red_zone_fgs = self.offRedZoneFgs
+        existing.off_red_zone_fgs = self.offRedZoneFGs
         existing.off_red_zones = self.offRedZones
         existing.off_red_zone_pct = self.offRedZonePct
         existing.off_red_zone_tds = self.offRedZoneTDs

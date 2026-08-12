@@ -1,7 +1,7 @@
 import os
 import time
-import requests
 
+import requests
 from dotenv import load_dotenv
 
 from services.slack_service import send_message

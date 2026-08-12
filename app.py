@@ -36,6 +36,7 @@ from services.ea_services import (
     get_persona_auth_code,
     get_personas,
     get_standings,
+    get_team_roster,
     get_team_stats,
     get_teams,
     get_weekly_schedule,
@@ -52,6 +53,7 @@ from services.league_hub_info_service import (
 )
 from services.roster_service import upsert_player
 from services.stat_services import (
+    get_stat_update,
     upsert_kick,
     upsert_pass,
     upsert_punt,
@@ -412,57 +414,77 @@ def sync_league():
     token = get_EA_token_info(session)
     blaze_session = get_blaze_session(token)
     league_info = get_madden_league_hub(token, blaze_session)
-    teams = get_teams(
-        token,
-        blaze_session,
-        league_id=LEAGUE_ID,
-    )
-    for i in range(0, len(teams), BATCH_SIZE):
-        batch = teams[i : i + BATCH_SIZE]
-        for t in batch:
-            upsert_team(session, t)
-            # roster = get_team_roster(token, blaze_session, LEAGUE_ID, t.teamId)
-            # for player in roster:
-            #     upsert_player(session, player)
-            session.commit()
 
     week_info = update_league_and_get_week_info(session, league_info, LEAGUE_ID)
 
-    standings = get_standings(token, blaze_session, LEAGUE_ID)
-
     if week_info.stage_index == 1 and week_info.week_index > 0:
-        # get last weeks stats
-        schedule = get_weekly_schedule(
-            token,
-            blaze_session,
-            LEAGUE_ID,
-            week_info.stage_index,
+        stat_update = get_stat_update(
+            session,
             week_info.week_index - 1,
+            week_info.stage_index,
+            week_info.current_year,
+            LEAGUE_ID,
         )
+        if stat_update is None:
+            stat_update = StatUpdate(
+                league_id=LEAGUE_ID,
+                week_index=week_info.week_index - 1,
+                stage_index=week_info.stage_index,
+                calendar_year=week_info.current_year,
+                league_info_id=LEAGUE_ID,
+            )
 
-        for g in schedule:
-            upsert_game(session, g)
+        if not stat_update.did_game_stat_sync:
+            # get last weeks stats
+            schedule = get_weekly_schedule(
+                token,
+                blaze_session,
+                LEAGUE_ID,
+                week_info.stage_index,
+                week_info.week_index - 1,
+            )
+            for g in schedule:
+                upsert_game(session, g)
 
-        stat_update = StatUpdate(
-            league_id=LEAGUE_ID,
-            week_index=week_info.week_index - 1,
-            stage_index=week_info.stage_index,
-            calendar_year=week_info.current_year,
-            league_info_id=LEAGUE_ID,
-            did_game_stat_sync=True,
-        )
+        stat_update.did_game_stat_sync = True
         session.flush()
 
-        stats = get_team_stats(
-            token,
-            blaze_session,
-            LEAGUE_ID,
-            week_info.stage_index,
-            week_info.week_index - 1,
-        )
-        for stat in stats:
-            stat = upsert_team_stat(session, stat)
-            session.add(stat)
+        if not stat_update.did_team_stat_sync:
+
+            stats = get_team_stats(
+                token,
+                blaze_session,
+                LEAGUE_ID,
+                week_info.stage_index,
+                week_info.week_index - 1,
+            )
+            for stat in stats:
+                stat = upsert_team_stat(session, stat)
+                session.add(stat)
+        stat_update.did_team_stat_sync = True
+        session.flush()
+
+        if not stat_update.did_teams_sync:
+            teams = get_teams(
+                token,
+                blaze_session,
+                league_id=LEAGUE_ID,
+            )
+            for i in range(0, len(teams), BATCH_SIZE):
+                batch = teams[i : i + BATCH_SIZE]
+                for t in batch:
+                    upsert_team(session, t)
+                    if not stat_update.did_players_sync:
+                        roster = get_team_roster(
+                            token, blaze_session, LEAGUE_ID, t.teamId
+                        )
+                        for player in roster:
+                            upsert_player(session, player)
+                        stat_update.did_players_sync = True
+            stat_update.did_teams_sync = True
+
+        if not stat_update.did_standings_sync:
+            standings = get_standings(token, blaze_session, LEAGUE_ID)
 
     if week_info.was_created:
 

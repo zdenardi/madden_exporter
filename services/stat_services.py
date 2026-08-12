@@ -413,3 +413,15 @@ def upsert_stat_update(session: Session, update: StatUpdate):
     existing.did_kick_stat_sync = update.did_kick_stat_sync
 
     return existing
+
+
+def get_stat_update(
+    session, week_index: int, stage_index: int, calendar_year: int, league_info_id: int
+) -> StatUpdate | None:
+    stmt = select(StatUpdate).where(
+        StatUpdate.league_info_id == league_info_id,
+        StatUpdate.week_index == week_index,
+        StatUpdate.stage_index == stage_index,
+        StatUpdate.calendar_year == calendar_year,
+    )
+    return session.execute(stmt).scalar_one_or_none()

@@ -28,6 +28,7 @@ class StatUpdate(Base):
     stage_index: Mapped[int]
     calendar_year: Mapped[int]
     league_id: Mapped[int]
+
     did_game_stat_sync: Mapped[bool] = mapped_column(default=False)
     did_players_sync: Mapped[bool] = mapped_column(default=False)
     did_passing_stat_sync: Mapped[bool] = mapped_column(default=False)
@@ -36,6 +37,9 @@ class StatUpdate(Base):
     did_defense_stat_sync: Mapped[bool] = mapped_column(default=False)
     did_punt_stat_sync: Mapped[bool] = mapped_column(default=False)
     did_kick_stat_sync: Mapped[bool] = mapped_column(default=False)
+    did_team_stat_sync: Mapped[bool] = mapped_column(default=False)
+    did_standings_sync: Mapped[bool] = mapped_column(default=False)
+    did_teams_sync: Mapped[bool] = mapped_column(default=False)
 
     league_hub_info: Mapped["LeagueHubInfo"] = relationship(
         back_populates="stat_updates"
