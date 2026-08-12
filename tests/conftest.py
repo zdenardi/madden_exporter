@@ -19,7 +19,7 @@ from models import (
 )
 from models.helper_classes import Base
 from models.league_hub_info import LeagueHubInfo
-from services.ea_services import get_EA_token_info
+from services.ea_auth_service import get_EA_token_info
 
 load_dotenv()
 

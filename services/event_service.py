@@ -1,5 +1,5 @@
 from models import Event, Game
-from services.game_services import get_favorite
+from services.game_service import get_favorite
 
 
 def create_upset_event(game: Game):
