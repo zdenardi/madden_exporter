@@ -40,7 +40,9 @@ def update_league_and_get_week_info(
     new_week = hub_info.responseInfo.value.get_week()
     new_year = hub_info.responseInfo.value.get_year()
     summaries = hub_info.responseInfo.value.get_human_game_summaries()
-    w_index, s_index = hub_info.responseInfo.value.get_internal_week_and_stage()
+    week_index, stage_index, season_index = (
+        hub_info.responseInfo.value.get_internal_week_and_stage()
+    )
     summary_text = "User Games: \n"
     for summary in summaries:
         summary_text += f"   {summary['user_name']}: {summary['summary']} \n"
@@ -55,8 +57,9 @@ def update_league_and_get_week_info(
             current_year=new_year,
             did_summaries_update=True,
             summaries=summary_text,
-            week_index=w_index,
-            stage_index=s_index,
+            week_index=week_index,
+            stage_index=stage_index,
+            season_index=season_index,
         )
 
     old_week = league_info.week
@@ -81,6 +84,7 @@ def update_league_and_get_week_info(
         current_year=new_year,
         did_summaries_update=are_new_summaries,
         summaries=summary_text,
-        week_index=w_index,
-        stage_index=s_index,
+        week_index=week_index,
+        stage_index=stage_index,
+        season_index=season_index,
     )

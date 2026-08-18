@@ -5,7 +5,8 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from models.helper_classes import Base, StatMixin
 
 if TYPE_CHECKING:
-    from models.Game import Game
+    from models import Player
+    from models.game import Game
 
 
 class KickingStat(StatMixin, Base):
@@ -26,3 +27,4 @@ class KickingStat(StatMixin, Base):
     xp_comp_pct: Mapped[float]
 
     game: Mapped["Game"] = relationship(back_populates="kicking_stats")
+    player: Mapped["Player"] = relationship(back_populates="kicking_stats")

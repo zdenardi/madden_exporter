@@ -36,7 +36,7 @@ class MaddenTeamStat(BaseModel):
     defRedZones: int
     defRedZonePct: float
     defRedZoneTDs: int
-    defSacks: int
+    defSacks: float
     defTotalYds: int
     off4thDownAtt: int
     off4thDownConv: int
@@ -270,7 +270,7 @@ class MaddenPlayerDefense(MaddenPlayerStatsBase):
     defInt: int
     defIntReturnYds: int
     defPts: int
-    defSacks: int
+    defSacks: float
     defSafeties: int
     defTDs: int
     defTotalTackles: int
@@ -518,7 +518,7 @@ class MaddenDefensiveStat(MaddenBaseStat):
     defInts: int
     defIntReturnYds: int
     defPts: int
-    defSacks: int
+    defSacks: float
     defSafeties: int
     defTDs: int
     defTotalTackles: int
@@ -870,7 +870,8 @@ class HubResponseValue(BaseModel):
     def get_internal_week_and_stage(self):
         week_index = self.careerHubInfo.seasonInfo.seasonWeek
         stage_index = self.careerHubInfo.seasonInfo.seasonWeekType
-        return (week_index, stage_index)
+        season_index = self.careerHubInfo.seasonInfo.seasonYear
+        return (week_index, stage_index, season_index)
 
     def get_human_game_summaries(self) -> list[HumanGameSummary]:
         summaries = []

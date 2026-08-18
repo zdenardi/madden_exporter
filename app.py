@@ -7,11 +7,15 @@ from urllib.parse import urlparse
 
 import requests
 from dotenv import load_dotenv
-from flask import Flask, render_template, request
+from flask import Flask, jsonify, render_template, request
+from flask_cors import CORS
 from sqlalchemy import select
 
-from constants import LEAGUE_ID
+from constants import GAMES_STATUSES, LEAGUE_ID
+from data_classes.api_requests import SyncRequest
+from data_classes.api_responses import GameResponse, TeamInfoResponse
 from data_classes.madden_classes import (
+    Game,
     MaddenKickingStat,
     MaddenPassingStat,
     MaddenPlayerData,
@@ -40,6 +44,7 @@ from services.event_service import create_upset_event
 from services.game_service import (
     get_games_by_week,
     is_upset,
+    sync_games,
     upsert_game,
 )
 from services.league_hub_info_service import (
@@ -57,10 +62,10 @@ from services.madden_data_service import (
     get_team_roster,
     get_team_stats,
     get_teams,
-    get_weekly_schedule,
 )
 from services.roster_service import upsert_player
 from services.stat_services import (
+    build_team_game_response,
     get_stat_update,
     upsert_def,
     upsert_kick,
@@ -80,6 +85,7 @@ APP_ENV = os.getenv("APP_ENV")
 
 
 app = Flask(__name__)
+CORS(app)
 setup_db(engine)
 
 
@@ -444,16 +450,7 @@ def sync_league():
             )
 
         if not stat_update.did_game_stat_sync:
-            # get last weeks stats
-            schedule = get_weekly_schedule(
-                token,
-                blaze_session,
-                LEAGUE_ID,
-                week_info.stage_index,
-                week_info.week_index - 1,
-            )
-            for g in schedule:
-                upsert_game(session, g)
+            sync_games(token, blaze_session, LEAGUE_ID, session, week_info)
 
         stat_update.did_game_stat_sync = True
         session.flush()
@@ -542,7 +539,7 @@ def sync_league():
             )
             for stat in def_stats:
                 upsert_def(session, stat)
-                stat_update.did_defense_stat_sync = True
+            stat_update.did_defense_stat_sync = True
 
         if not stat_update.did_punt_stat_sync:
             punt_stats = get_punting_stats(
@@ -554,7 +551,7 @@ def sync_league():
             )
             for stat in punt_stats:
                 upsert_punt(session, stat)
-                stat_update.did_punt_stat_sync = True
+            stat_update.did_punt_stat_sync = True
 
         if not stat_update.did_kick_stat_sync:
             kicking_stats = get_kicking_stats(
@@ -566,7 +563,7 @@ def sync_league():
             )
             for stat in kicking_stats:
                 upsert_kick(session, stat)
-                stat_update.did_kick_stat_sync = True
+            stat_update.did_kick_stat_sync = True
 
     if week_info.was_created:
 
@@ -587,6 +584,7 @@ def sync_league():
         slack_service.send_message(week_info.summaries, channel_name)
 
     if week_info.did_summaries_update:
+        sync_games(token, blaze_session, LEAGUE_ID, session, week_info)
         slack_service.send_message(week_info.summaries, channel_name)
 
     upsert_stat_update(session, stat_update)
@@ -596,6 +594,27 @@ def sync_league():
         session.close()
 
     return {"success": True}
+
+
+@app.route("/api/sync", methods=["POST"])
+def sync():
+    data = request.get_json()
+    data = SyncRequest.model_validate(data)
+    session = SessionLocal()
+    token = get_EA_token_info(session)
+    blaze_session = get_blaze_session(token)
+    league_info = get_madden_league_hub(token, blaze_session)
+
+    week_info = update_league_and_get_week_info(session, league_info, LEAGUE_ID)
+
+    if data.game:
+        sync_games(token, blaze_session, LEAGUE_ID, session, week_info)
+
+    try:
+        session.commit()
+    finally:
+        session.close()
+    return jsonify({"success": True})
 
 
 @app.route("/login_EA", methods=["GET"])
@@ -608,6 +627,8 @@ def get_code_from_url():
     session = SessionLocal()
 
     url = request.form.get("url")
+    if not isinstance(url, str) or not url:
+        return jsonify({"error": "A valid URL is required"}), 400
 
     parsed_url = urlparse(url)
     query_params = parse_qs(parsed_url.query)
@@ -644,3 +665,64 @@ def get_code_from_url():
         return {"success": True, "token": "Valid"}
     else:
         return {"success": False}
+
+
+@app.route("/api/teams", methods=["GET"])
+def send_teams():
+    session = SessionLocal()
+
+    try:
+        teams = session.query(TeamInfo).all()
+        response = [
+            TeamInfoResponse.model_validate(team).model_dump() for team in teams
+        ]
+        return jsonify(response)
+    finally:
+        session.close()
+
+
+@app.route("/api/games/latest", methods=["GET"])
+def send_games():
+    session = SessionLocal()
+
+    try:
+        latest_season = (
+            session.query(Game.season_index)
+            .order_by(Game.season_index.desc())
+            .first()[0]
+        )
+        latest_week = (
+            session.query(Game.week_index)
+            .where(Game.season_index == latest_season)
+            .order_by(Game.week_index.desc())
+            .first()[0]
+        )
+
+        games = (
+            session.query(Game)
+            .filter(
+                Game.season_index == latest_season,
+                Game.week_index == latest_week,
+            )
+            .all()
+        )
+        response = [
+            GameResponse(
+                id=game.id,
+                away_score=game.away_score,
+                home_score=game.home_score,
+                status=GAMES_STATUSES[game.status],
+                away_team=build_team_game_response(
+                    game,
+                    game.away_team,
+                ),
+                home_team=build_team_game_response(
+                    game,
+                    game.home_team,
+                ),
+            ).model_dump(by_alias=True)
+            for game in games
+        ]
+        return jsonify(response), 201
+    finally:
+        session.close()
