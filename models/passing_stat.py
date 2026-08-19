@@ -5,7 +5,8 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from models.helper_classes import Base, StatMixin
 
 if TYPE_CHECKING:
-    from models.Game import Game
+    from models import Player
+    from models.game import Game
 
 
 class PassingStat(StatMixin, Base):
@@ -26,3 +27,4 @@ class PassingStat(StatMixin, Base):
     pass_yds_per_game: Mapped[float]
 
     game: Mapped["Game"] = relationship(back_populates="passing_stats")
+    player: Mapped["Player"] = relationship(back_populates="passing_stats")

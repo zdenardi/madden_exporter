@@ -6,7 +6,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from models.helper_classes import Base
 
 if TYPE_CHECKING:
-    from models.Game import Game
+    from models.game import Game
     from models.team_info import TeamInfo
 
 

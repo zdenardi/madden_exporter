@@ -9,7 +9,7 @@ from data_classes.madden_classes import (
     MaddenLeagueHubInfo,
 )
 from models import league_hub_info
-from services.league_hub_info_service import LeagueHubInfoService
+from services.league_hub_info_service import update_league_and_get_week_info
 
 
 def test_weekly_information_update_summary(
@@ -24,7 +24,7 @@ def test_weekly_information_update_summary(
         tdfid=1, tdfclass="Blaze::Mock", value=HubResponseValue.model_validate(value)
     )
     madden_league_info = MaddenLeagueHubInfo(responseInfo=response_info)
-    week_info = LeagueHubInfoService.get_week_info(session, madden_league_info, 1)
+    week_info = update_league_and_get_week_info(session, madden_league_info, 1)
     assert week_info.advanced
     assert week_info.old_week == 1
     assert week_info.current_week == 9
@@ -50,5 +50,5 @@ def test_weekly_information_no_summary_update(
     )
     session.add(example_info)
     session.flush()
-    week_info = LeagueHubInfoService.get_week_info(session, madden_league_info, ID)
+    week_info = update_league_and_get_week_info(session, madden_league_info, ID)
     assert week_info.did_summaries_update == False

@@ -5,7 +5,9 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from models.helper_classes import Base, StatMixin
 
 if TYPE_CHECKING:
-    from Game import Game
+    from game import Game
+
+    from models import Player
 
 
 class DefensiveStat(StatMixin, Base):
@@ -25,3 +27,4 @@ class DefensiveStat(StatMixin, Base):
     def_total_tackles: Mapped[int]
 
     game: Mapped["Game"] = relationship(back_populates="defensive_stats")
+    player: Mapped["Player"] = relationship(back_populates="defensive_stats")

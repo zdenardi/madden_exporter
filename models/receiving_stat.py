@@ -2,10 +2,11 @@ from typing import TYPE_CHECKING
 
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
+from models import Player
 from models.helper_classes import Base, StatMixin
 
 if TYPE_CHECKING:
-    from models.Game import Game
+    from models.game import Game
 
 
 class ReceivingStat(StatMixin, Base):
@@ -26,3 +27,4 @@ class ReceivingStat(StatMixin, Base):
     rec_yds_per_game: Mapped[float]
 
     game: Mapped["Game"] = relationship(back_populates="receiving_stats")
+    player: Mapped["Player"] = relationship(back_populates="receiving_stats")

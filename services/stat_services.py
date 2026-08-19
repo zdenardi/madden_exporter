@@ -2,6 +2,7 @@
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from data_classes.api_responses import TeamGameResponse, TeamInfoResponse
 from data_classes.madden_classes import (
     MaddenDefensiveStat,
     MaddenKickingStat,
@@ -20,6 +21,7 @@ from models import (
     PuntingStat,
     ReceivingStat,
     RushingStat,
+    TeamInfo,
     TeamStats,
 )
 from models.stat_update import StatUpdate
@@ -82,7 +84,13 @@ def upsert_pass(session: Session, stat: MaddenPassingStat):
         existing.pass_yds_per_game = stat.passYdsPerGame
         return existing
     else:
-        game = session.scalar(select(Game).where(Game.schedule_id == stat.scheduleId))
+        game = session.scalar(
+            select(Game).where(
+                Game.schedule_id == stat.scheduleId,
+                Game.week_index == stat.weekIndex,
+                Game.season_index == stat.seasonIndex,
+            )
+        )
 
         if game is None:
             raise ValueError(
@@ -109,8 +117,8 @@ def upsert_pass(session: Session, stat: MaddenPassingStat):
             pass_yds_per_att=stat.passYdsPerAtt,
             pass_yds_per_game=stat.passYdsPerGame,
         )
-
         session.add(passing)
+
         return passing
 
 
@@ -119,8 +127,10 @@ def upsert_rush(session: Session, stat: MaddenRushingStat):
         RushingStat.roster_id == stat.rosterId,
         RushingStat.season == stat.seasonIndex,
         RushingStat.week == stat.weekIndex,
+        Game.schedule_id == stat.scheduleId,
     )
-    existing = session.execute(stmt).scalar_one_or_none()
+
+    existing = session.execute(stmt).scalar()
 
     if existing:
         existing.rush_att = stat.rushAtt
@@ -136,7 +146,13 @@ def upsert_rush(session: Session, stat: MaddenRushingStat):
         existing.rush_yds_per_game = stat.rushYdsPerGame
         return existing
     else:
-        game = session.scalar(select(Game).where(Game.schedule_id == stat.scheduleId))
+        game = session.scalar(
+            select(Game).where(
+                Game.schedule_id == stat.scheduleId,
+                Game.week_index == stat.weekIndex,
+                Game.season_index == stat.seasonIndex,
+            )
+        )
 
         if game is None:
             raise ValueError(
@@ -190,7 +206,13 @@ def upsert_rec(session: Session, stat: MaddenReceivingStat):
         existing.rec_yds_per_game = stat.recYdsPerGame
         return existing
     else:
-        game = session.scalar(select(Game).where(Game.schedule_id == stat.scheduleId))
+        game = session.scalar(
+            select(Game).where(
+                Game.schedule_id == stat.scheduleId,
+                Game.week_index == stat.weekIndex,
+                Game.season_index == stat.seasonIndex,
+            )
+        )
 
         if game is None:
             raise ValueError(
@@ -244,7 +266,13 @@ def upsert_def(session, stat: MaddenDefensiveStat):
         existing.def_total_tackles = stat.defTotalTackles
         return existing
     else:
-        game = session.scalar(select(Game).where(Game.schedule_id == stat.scheduleId))
+        game = session.scalar(
+            select(Game).where(
+                Game.schedule_id == stat.scheduleId,
+                Game.week_index == stat.weekIndex,
+                Game.season_index == stat.seasonIndex,
+            )
+        )
         if game is None:
             raise ValueError(
                 f"Game {stat.scheduleId} not found, could not add Defensive stat"
@@ -293,7 +321,13 @@ def upsert_punt(session, stat: MaddenPuntingStat):
         existing.punt_yds = stat.puntYds
         return existing
     else:
-        game = session.scalar(select(Game).where(Game.schedule_id == stat.scheduleId))
+        game = session.scalar(
+            select(Game).where(
+                Game.schedule_id == stat.scheduleId,
+                Game.week_index == stat.weekIndex,
+                Game.season_index == stat.seasonIndex,
+            )
+        )
         if game is None:
             raise ValueError(
                 f"Game {stat.scheduleId} not found, could not add Punting Stat"
@@ -343,7 +377,13 @@ def upsert_kick(session, stat: MaddenKickingStat):
         existing.xp_comp_pct = stat.xPCompPct
         return existing
     else:
-        game = session.scalar(select(Game).where(Game.schedule_id == stat.scheduleId))
+        game = session.scalar(
+            select(Game).where(
+                Game.schedule_id == stat.scheduleId,
+                Game.week_index == stat.weekIndex,
+                Game.season_index == stat.seasonIndex,
+            )
+        )
         if game is None:
             raise ValueError(
                 f"Game {stat.scheduleId} not found, could not add kicking stat"
@@ -381,7 +421,13 @@ def upsert_team_stat(session: Session, stat: MaddenTeamStat):
         existing = stat.update_from_madden(existing)
         return existing
     else:
-        game = session.scalar(select(Game).where(Game.schedule_id == stat.scheduleId))
+        game = session.scalar(
+            select(Game).where(
+                Game.schedule_id == stat.scheduleId,
+                Game.week_index == stat.weekIndex,
+                Game.season_index == stat.seasonIndex,
+            )
+        )
         if game is None:
             raise ValueError(
                 f"Game {stat.scheduleId} not found, could not add kicking stat"
@@ -425,3 +471,36 @@ def get_stat_update(
         StatUpdate.calendar_year == calendar_year,
     )
     return session.execute(stmt).scalar_one_or_none()
+
+
+def build_team_game_response(game: Game, team: TeamInfo):
+    serialized_team = TeamInfoResponse.model_validate(team).model_dump()
+
+    passing_stats = [
+        stat for stat in game.passing_stats if stat.team_id == team.team_id
+    ]
+    rushing_stats = [
+        stat for stat in game.rushing_stats if stat.team_id == team.team_id
+    ]
+    receiving_stats = [
+        stat for stat in game.receiving_stats if stat.team_id == team.team_id
+    ]
+    defensive_stats = [
+        stat for stat in game.defensive_stats if stat.team_id == team.team_id
+    ]
+    kicking_stats = [
+        stat for stat in game.kicking_stats if stat.team_id == team.team_id
+    ]
+    punting_stats = [
+        stat for stat in game.punting_stats if stat.team_id == team.team_id
+    ]
+
+    return TeamGameResponse(
+        team=serialized_team,
+        passing_stats=passing_stats,
+        rushing_stats=rushing_stats,
+        receiving_stats=receiving_stats,
+        defensive_stats=defensive_stats,
+        kicking_stats=kicking_stats,
+        punting_stats=punting_stats,
+    )

@@ -1,5 +1,18 @@
+from typing import TYPE_CHECKING
+
 from sqlalchemy import ForeignKey
-from sqlalchemy.orm import DeclarativeBase, Mapped, declarative_mixin, mapped_column
+from sqlalchemy.orm import (
+    DeclarativeBase,
+    Mapped,
+    declarative_mixin,
+    declared_attr,
+    mapped_column,
+    relationship,
+)
+
+if TYPE_CHECKING:
+    from data_classes.madden_classes import Game
+    from models.team_info import Player, TeamInfo
 
 
 class Base(DeclarativeBase):

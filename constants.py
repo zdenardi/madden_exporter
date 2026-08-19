@@ -38,3 +38,5 @@ LeagueDataKey = Literal[
     "PASSING_STATS",
     "TEAM_ROSTER",
 ]
+
+GAMES_STATUSES = ["", "NOT PLAYED", "AWAY_WIN", "HOME_WIN", "TIE"]

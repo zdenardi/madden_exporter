@@ -1,0 +1,30 @@
+{
+    "timestamp": "2026-08-16T22:05:31.670747",
+    "client": "127.0.0.1",
+    "method": "GET",
+    "url": "/success?code=QUOwAHEskM6F9P95hOmPgfZSAAd-5HDqCabE9LwT",
+    "path": "/success",
+    "query": {
+        "code": [
+            "QUOwAHEskM6F9P95hOmPgfZSAAd-5HDqCabE9LwT"
+        ]
+    },
+    "headers": {
+        "Host": "127.0.0.1",
+        "X-Real-IP": "127.0.0.1",
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:153.0) Gecko/20100101 Firefox/153.0",
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+        "Accept-Language": "en-US,en;q=0.9",
+        "Accept-Encoding": "gzip, deflate, br, zstd",
+        "Cookie": "__clerk_db_jwt_NKshVAD1=dvb_37VcfUfVPrQurOQ7Z0821EEPR9W; __clerk_db_jwt=dvb_37VcfUfVPrQurOQ7Z0821EEPR9W; __session=eyJhbGciOiJSUzI1NiIsImNhdCI6ImNsX0I3ZDRQRDExMUFBQSIsImtpZCI6Imluc18zN1ZVQTdOZXBvR1pxQkdUcjNHTHRTUUE4VEsiLCJ0eXAiOiJKV1QifQ.eyJhenAiOiJodHRwOi8vMTI3LjAuMC4xOjMwMDAiLCJleHAiOjE3NzY2NzA5NTgsImZ2YSI6WzAsLTFdLCJpYXQiOjE3NzY2NzA4OTgsImlzcyI6Imh0dHBzOi8vbW9yZS1ibHVlZ2lsbC00MC5jbGVyay5hY2NvdW50cy5kZXYiLCJuYmYiOjE3NzY2NzA4ODgsInNpZCI6InNlc3NfM0NjMzVxZnhwYk45VGlVWVk2eUhjSGE5SkdwIiwic3RzIjoiYWN0aXZlIiwic3ViIjoidXNlcl8zN1kzYTIxTnU3TGl1azJhUUUzVlhPdFFqV1UiLCJ2IjoyfQ.YnCy0fN8yDZT_C9r5ZcrQZKsJEWMefCzmCw5zQiE6E7ExvZ7KlXAG1JZctP56UMp4MMVxZGeWg5PZP2wU1mcKm-shAkdfMekj_dp0GKDXxLvqOz8mm4TvscJCbgIKCYTjvZNI26b4JJok_NR60DRUwHnPdxtFhAdmoNxqM_dijoPLMhnIzqnY5URHOXBq5A5xL0nIMv4CqHMed6RC3uPog5oy2VLuc6_IusOW3gIj5wfAcYKCQqpuzpIjT6IIv7F7pEnm-FKme_JC58uXhvJ7Cr0DvO_0AEwd7WOnznNMxCXQHkvscCRs7nmUFY8l871qfIbYkaCCPw1vCNfD0Djbg; __session_NKshVAD1=eyJhbGciOiJSUzI1NiIsImNhdCI6ImNsX0I3ZDRQRDExMUFBQSIsImtpZCI6Imluc18zN1ZVQTdOZXBvR1pxQkdUcjNHTHRTUUE4VEsiLCJ0eXAiOiJKV1QifQ.eyJhenAiOiJodHRwOi8vMTI3LjAuMC4xOjMwMDAiLCJleHAiOjE3NzY2NzA5NTgsImZ2YSI6WzAsLTFdLCJpYXQiOjE3NzY2NzA4OTgsImlzcyI6Imh0dHBzOi8vbW9yZS1ibHVlZ2lsbC00MC5jbGVyay5hY2NvdW50cy5kZXYiLCJuYmYiOjE3NzY2NzA4ODgsInNpZCI6InNlc3NfM0NjMzVxZnhwYk45VGlVWVk2eUhjSGE5SkdwIiwic3RzIjoiYWN0aXZlIiwic3ViIjoidXNlcl8zN1kzYTIxTnU3TGl1azJhUUUzVlhPdFFqV1UiLCJ2IjoyfQ.YnCy0fN8yDZT_C9r5ZcrQZKsJEWMefCzmCw5zQiE6E7ExvZ7KlXAG1JZctP56UMp4MMVxZGeWg5PZP2wU1mcKm-shAkdfMekj_dp0GKDXxLvqOz8mm4TvscJCbgIKCYTjvZNI26b4JJok_NR60DRUwHnPdxtFhAdmoNxqM_dijoPLMhnIzqnY5URHOXBq5A5xL0nIMv4CqHMed6RC3uPog5oy2VLuc6_IusOW3gIj5wfAcYKCQqpuzpIjT6IIv7F7pEnm-FKme_JC58uXhvJ7Cr0DvO_0AEwd7WOnznNMxCXQHkvscCRs7nmUFY8l871qfIbYkaCCPw1vCNfD0Djbg",
+        "Upgrade-Insecure-Requests": "1",
+        "Sec-Fetch-Dest": "document",
+        "Sec-Fetch-Mode": "navigate",
+        "Sec-Fetch-Site": "none",
+        "Sec-Fetch-User": "?1",
+        "DNT": "1",
+        "Sec-GPC": "1",
+        "Priority": "u=0, i"
+    },
+    "body": ""
+}
